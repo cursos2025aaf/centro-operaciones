@@ -10,6 +10,7 @@
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -287,6 +288,48 @@ function useLS(k,i){
   const[v,sv]=useState(()=>{try{const s=localStorage.getItem(k);return s?JSON.parse(s):i;}catch{return i;}});
   const set=nv=>{const val=typeof nv==='function'?nv(v):nv;sv(val);try{localStorage.setItem(k,JSON.stringify(val));}catch{}};
   return[v,set];
+}
+
+/* ── SUPABASE SYNC ── */
+const SB_URL='https://hvvqkysuquzjpmwcrzkv.supabase.co';
+const SB_KEY='sb_publishable_C-6iZqmsAxwsa9fnE_Hx-w_dHLzJNDe';
+let _sb=null;
+const getSB=()=>{if(!_sb&&window.supabase)_sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});return _sb;};
+
+function useSupaTable(lsKey,supaTable,init){
+  const[v,sv]=useState(()=>{try{const s=localStorage.getItem(lsKey);return s?JSON.parse(s):init;}catch{return init;}});
+  const ref=useRef(v);
+  const setV=useCallback(nv=>{
+    const prev=ref.current;
+    const next=typeof nv==='function'?nv(prev):nv;
+    ref.current=next;sv(next);
+    try{localStorage.setItem(lsKey,JSON.stringify(next));}catch{}
+    const sb=getSB();if(!sb)return;
+    (async()=>{
+      if(next.length)await sb.from(supaTable).upsert(next);
+      const ids=new Set(next.map(x=>String(x.id)));
+      for(const d of prev.filter(x=>!ids.has(String(x.id))))
+        await sb.from(supaTable).delete().eq('id',d.id);
+    })().catch(e=>console.warn('SB sync:',e));
+  },[lsKey,supaTable]);
+  useEffect(()=>{
+    const load=async()=>{
+      const sb=getSB();if(!sb)return;
+      const{data,error}=await sb.from(supaTable).select('*');
+      if(!error&&data){
+        if(data.length>0){
+          ref.current=data;sv(data);
+          try{localStorage.setItem(lsKey,JSON.stringify(data));}catch{}
+        } else if(ref.current.length>0){
+          try{await sb.from(supaTable).upsert(ref.current);}catch(e){console.warn('SB init push:',e);}
+        }
+      }
+    };
+    load();
+    const t=setInterval(load,15000);
+    return()=>clearInterval(t);
+  },[lsKey,supaTable]);
+  return[v,setV];
 }
 
 const SVG={
@@ -608,8 +651,8 @@ function ApiKeyModal({current,onClose,onSave}){
 
 /* ══════════════ APP ══════════════ */
 function App(){
-  const[tasks,setTasks]=useLS('op_tasks_v5',INIT_TASKS);
-  const[projs,setProjs]=useLS('op_projs_v5',INIT_PROJS);
+  const[tasks,setTasks]=useSupaTable('op_tasks_v5','co_tasks',INIT_TASKS);
+  const[projs,setProjs]=useSupaTable('op_projs_v5','co_projs',INIT_PROJS);
   const[apiKey,setApiKey]=useLS('op_apikey_v5','');
   const[selProj,setSelProj]=useState('all');
   const[filt,setFilt]=useState('all');
