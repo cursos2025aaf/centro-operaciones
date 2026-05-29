@@ -919,3 +919,84 @@ function App(){
     <div className="layout">
       <nav className={`sidebar${sbOpen?'':' closed'}`}>
         <SBContent {...sbProps}/>
+      </nav>
+      <main className="main">
+        <div className="toolbar">
+          <span className="toolbar-title">{curPname}</span>
+          <span className="toolbar-sub">{filtered.length} tarea{filtered.length!==1?'s':''}</span>
+          <span className="kb-hint">N nueva · A asistente · Esc cerrar · ⠿ arrastrar</span>
+          <div className="chips">
+            {FILTERS.map(f=>{
+            const active=filt===f.id;
+            const style=f.c&&active?{background:f.c+'20',color:f.c,borderColor:f.c}:f.c&&!active?{}:{};
+            return <button key={f.id} className={`chip c-${f.id}${active?' on':''}`} style={style} onClick={()=>setFilt(f.id)}>{f.l}</button>;
+          })}
+          </div>
+        </div>
+        {taskGrid}
+      </main>
+      <div className={`ai-panel${aiOpen?' open':''}`}>
+        <div className="ai-hdr">
+          <div><div className="ai-title"><div className="ai-pulse"/>Asistente IA</div><div className="ai-sub">Claude Haiku · creá tareas hablando</div></div>
+          <button onClick={()=>setAiOpen(false)}><Ic n="x" s={16} c="rgba(255,255,255,.6)"/></button>
+        </div>
+        <AIContent {...aiProps}/>
+      </div>
+    </div>
+
+    {/* MOBILE BOTTOM NAV */}
+    <nav className="mob-nav">
+      {[
+        {id:'tasks',label:'Tareas',ico:'list'},
+        {id:'projs',label:'Proyectos',ico:'folder'},
+        {id:'ai',label:'Asistente',ico:'ai'},
+        {id:'kpis',label:'KPIs',ico:'chart'},
+      ].map(tab=><div key={tab.id} className={`mob-nav-item${mobTab===tab.id?' active':''}`}
+        onClick={()=>{
+          if(tab.id==='ai'){setAiSheet(true);}
+          else if(tab.id==='projs'){setDrawer(true);}
+          else setMobTab(tab.id);
+        }}>
+        <Ic n={tab.ico} s={22} c={mobTab===tab.id?'var(--navy)':'var(--slate)'}/>
+        <span>{tab.label}</span>
+      </div>)}
+    </nav>
+
+    {/* FAB */}
+    <button className="fab" onClick={()=>setTaskMod({})}>+</button>
+
+    {/* MOBILE DRAWER (Proyectos) */}
+    <div className={`drawer-bg${drawer?' open':''}`} onClick={()=>setDrawer(false)}/>
+    <div className={`drawer${drawer?' open':''}`}>
+      <div className="drawer-hdr">
+        <span style={{fontSize:14,fontWeight:700,color:'#fff'}}>Proyectos</span>
+        <button onClick={()=>setDrawer(false)}><Ic n="x" s={18} c="rgba(255,255,255,.7)"/></button>
+      </div>
+      <SBContent {...sbProps} setSelProj={v=>{setSelProj(v);setDrawer(false);}}/>
+    </div>
+
+    {/* MOBILE AI SHEET */}
+    <div className={`ai-sheet-bg${aiSheet?' open':''}`} onClick={e=>{if(e.target===e.currentTarget)setAiSheet(false);}}>
+      <div className="ai-sheet">
+        <div className="ai-hdr" style={{borderRadius:'20px 20px 0 0'}}>
+          <div><div className="ai-title"><div className="ai-pulse"/>Asistente IA</div><div className="ai-sub">Dictá o escribí lo que necesitás</div></div>
+          <button onClick={()=>setAiSheet(false)}><Ic n="x" s={16} c="rgba(255,255,255,.6)"/></button>
+        </div>
+        <div style={{flex:1,display:'flex',flexDirection:'column',maxHeight:'75vh',overflow:'hidden'}}>
+          <AIContent {...aiProps} onOpenKey={()=>{setAiSheet(false);setApiMod(true);}}/>
+        </div>
+      </div>
+    </div>
+
+    {/* MODALS */}
+    {taskMod!==null&&<TaskModal t={taskMod?.id?taskMod:null} projs={projs} onClose={()=>setTaskMod(null)} onSave={saveTask}/>}
+    {projMod!==null&&<ProjModal proj={projMod?.id?projMod:null} onClose={()=>setProjMod(null)} onSave={saveProj}/>}
+    {projDelMod&&<ProjDelModal proj={projDelMod.proj} count={projDelMod.count} onClose={()=>setProjDelMod(null)} onDelAll={delProjAll} onDelKeep={delProjKeep}/>}
+    {apiMod&&<ApiKeyModal current={apiKey} onClose={()=>setApiMod(false)} onSave={k=>{setApiKey(k);setApiMod(false);notify(k?'API Key guardada ✓':'API Key eliminada',!k);}}/>}
+    {toast&&<div className="toast" style={{background:toast.err?'var(--redL)':'var(--greenL)',border:`2px solid ${toast.err?'var(--red)':'var(--green)'}`,color:toast.err?'var(--red)':'var(--green)'}}>{toast.err?'✗':'✓'} {toast.msg}</div>}
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
