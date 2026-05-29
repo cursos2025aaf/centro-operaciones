@@ -114,15 +114,20 @@ input,textarea,select{font-family:inherit;}
 .sw-del{background:var(--red);}
 
 .trow{background:var(--white);border:2px solid var(--border);border-left-width:5px;border-radius:10px;display:flex;align-items:stretch;transition:box-shadow .18s;overflow:hidden;position:relative;z-index:2;cursor:default;}
-.trow.prio-1{border-left-color:var(--red);}
-.trow.prio-2{border-left-color:var(--amber);}
-.trow.prio-3{border-left-color:var(--blue2);}
+.trow.prio-1{border-left-color:#EF4444;}
+.trow.prio-2{border-left-color:#F97316;}
+.trow.prio-3{border-left-color:#F59E0B;}
+.trow.prio-4{border-left-color:#22C55E;}
+.trow.prio-5{border-left-color:#3B82F6;}
+.trow.prio-6{border-left-color:#8B5CF6;}
+.trow.prio-7{border-left-color:#EC4899;}
 .trow.st-done{border-left-color:var(--green);opacity:.7;}
 .trow:hover{box-shadow:0 3px 12px rgba(0,0,0,.09);}
 .trow.drag-over{border-top:3px solid var(--blue2);}
 .drag-handle{display:flex;align-items:center;justify-content:center;width:26px;flex-shrink:0;cursor:grab;color:var(--slate3);font-size:15px;transition:color .15s;}
 .drag-handle:hover{color:var(--slate);}
 .drag-handle:active{cursor:grabbing;}
+.seq-num{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--border);color:var(--slate);font-size:11px;font-weight:700;font-family:'DM Mono',monospace;flex-shrink:0;margin:auto 4px;}
 .trow-body{flex:1;padding:9px 12px;display:flex;flex-direction:column;gap:4px;min-width:0;}
 .trow-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .trow-name{font-size:14px;font-weight:600;color:var(--text);line-height:1.3;}
@@ -132,9 +137,13 @@ input,textarea,select{font-family:inherit;}
 .trow-note{font-size:12px;color:var(--slate);line-height:1.4;padding:3px 8px;background:var(--bg2);border-left:3px solid var(--border2);border-radius:0 5px 5px 0;}
 .badge-proj{font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:2px 8px;border-radius:4px;}
 .badge-prio{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;font-family:'DM Mono',monospace;}
-.p1{background:var(--redL);color:var(--red);}
-.p2{background:var(--amberL);color:var(--amber);}
-.p3{background:var(--blueL);color:var(--blue);}
+.p1{background:#FEF2F2;color:#EF4444;}
+.p2{background:#FFF7ED;color:#F97316;}
+.p3{background:#FFFBEB;color:#F59E0B;}
+.p4{background:#F0FDF4;color:#22C55E;}
+.p5{background:#EFF6FF;color:#3B82F6;}
+.p6{background:#F5F3FF;color:#8B5CF6;}
+.p7{background:#FDF2F8;color:#EC4899;}
 .badge-date{font-size:10px;color:var(--slate);font-family:'DM Mono',monospace;}
 .badge-date.ov{color:var(--red);font-weight:700;}
 .badge-ov{background:var(--redL);color:var(--red);font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;}
@@ -257,6 +266,11 @@ select.inp{cursor:pointer;}
 const {useState,useEffect,useRef,useMemo,useCallback}=React;
 
 const PALETTE=['#10B981','#F59E0B','#3B82F6','#8B5CF6','#EF4444','#EC4899','#06B6D4','#84CC16','#F97316','#6366F1','#14B8A6','#A855F7'];
+
+const PRIO_DIAS=[
+  [1,'#EF4444','Lun'],[2,'#F97316','Mar'],[3,'#F59E0B','Mié'],
+  [4,'#22C55E','Jue'],[5,'#3B82F6','Vie'],[6,'#8B5CF6','Sáb'],[7,'#EC4899','Dom']
+];
 
 const INIT_PROJS=[
   {id:'pal',name:'PAL SRL',color:'#10B981'},
@@ -397,10 +411,11 @@ function TaskRow({task,projs,onEdit,onDel,onSt,onDragStart,onDragOver,onDrop,onI
     onDrop={e=>{e.preventDefault();onDrop(task.id);}}
     onDragEnd={()=>onDrop(null)}>
     <div className="drag-handle">⠿</div>
+    <div className="seq-num" title="Posición">{task.seq||'—'}</div>
     <div className="trow-body">
       <div className="trow-top">
         <span className="badge-proj" style={{background:p.color+'20',color:p.color}}>{p.name}</span>
-        <span className={`badge-prio p${task.prio}`}>P{task.prio}</span>
+        <span className={`badge-prio p${task.prio}`}>{(()=>{const d=PRIO_DIAS.find(x=>x[0]===task.prio);return d?`P${d[0]} ${d[2]}`:`P${task.prio}`;})()}</span>
         {over&&<span className="badge-ov">⚠ Vencida</span>}
         {task.date&&<span className={`badge-date${over?' ov':''}`}>📅 {fmt(task.date)}</span>}
       </div>
@@ -441,7 +456,7 @@ function AIContent({tasks,projs,setTasks,apiKey,onOpenKey}){
     try{
       const pNames=projs.map(p=>p.id+'='+p.name).join(', ');
       const sum=tasks.slice(-20).map(x=>`[${x.status}][P${x.prio}] ${x.name} (${x.proj}${x.date?', '+fmt(x.date):''} )`).join('\n');
-      const sys=`Sos el asistente de IAGENTES.TECH de Andrés Forastello. Proyectos: ${pNames}.\nTareas:\n${sum}\nSi te piden crear una tarea respondé EXACTAMENTE:\n<<<TAREA>>>\n{"name":"...","proj":"id_proyecto","prio":1,"notes":"...","date":"YYYY-MM-DD"}\n<<<FIN>>>\nLuego 1 oración de confirmación. Español rioplatense, directo.`;
+      const sys=`Sos el asistente de IAGENTES.TECH de Andrés Forastello. Proyectos: ${pNames}.\nPrioridades: P1=Lun P2=Mar P3=Mié P4=Jue P5=Vie P6=Sáb P7=Dom.\nTareas:\n${sum}\nSi te piden crear una tarea respondé EXACTAMENTE:\n<<<TAREA>>>\n{"name":"...","proj":"id_proyecto","prio":1,"notes":"...","date":"YYYY-MM-DD"}\n<<<FIN>>>\nLuego 1 oración de confirmación. Español rioplatense, directo.`;
       const res=await fetch('https://api.anthropic.com/v1/messages',{
         method:'POST',
         headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
@@ -477,7 +492,7 @@ function AIContent({tasks,projs,setTasks,apiKey,onOpenKey}){
     </div>
     <div className="ai-foot">
       <div className="ai-sugs">
-        {['¿Qué está vencido?','Urgentes P1','Estado proyectos','Nueva tarea'].map((s,i)=>
+        {['¿Qué está vencido?','Tareas del lunes','Estado proyectos','Nueva tarea'].map((s,i)=>
           <button key={i} className="ai-sug" onClick={()=>send(s)}>{s}</button>)}
       </div>
       <div className="ai-row">
@@ -598,16 +613,18 @@ function TaskModal({t,projs,onClose,onSave}){
           <div className="seg">{projs.map(p=><button key={p.id} className="sb"
             style={f.proj===p.id?{background:p.color,borderColor:p.color,color:'#fff'}:{}}
             onClick={()=>u('proj')(p.id)}>{p.name}</button>)}</div></div>
+        <div className="fld"><label className="lbl">Prioridad / Día</label>
+          <div className="seg" style={{flexWrap:'wrap',gap:4}}>{PRIO_DIAS.map(([n,c,l])=>
+            <button key={n} className="sb" style={f.prio===n?{background:c,borderColor:c,color:'#fff',minWidth:60}:{minWidth:60}} onClick={()=>u('prio')(n)}>P{n} {l}</button>)}</div></div>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-          <div className="fld"><label className="lbl">Prioridad</label>
-            <div className="seg">{[[1,'var(--red)','P1 Urgente'],[2,'var(--amber)','P2 Normal'],[3,'var(--blue2)','P3 Baja']].map(([n,c,l])=>
-              <button key={n} className="sb" style={f.prio===n?{background:c,borderColor:c,color:'#fff'}:{}} onClick={()=>u('prio')(n)}>{l}</button>)}</div></div>
           <div className="fld"><label className="lbl">Estado</label>
             <select className="inp" value={f.status} onChange={e=>u('status')(e.target.value)}>
               <option value="pending">🔴 Pendiente</option>
               <option value="partial">🟡 En curso</option>
               <option value="done">✅ Cumplida</option>
             </select></div>
+          <div className="fld"><label className="lbl">Posición en la lista</label>
+            <input className="inp" type="number" min="1" placeholder="Ej: 3" value={f.seq||''} onChange={e=>u('seq')(e.target.value===''?undefined:parseInt(e.target.value))}/></div>
         </div>
         <div className="fld"><label className="lbl">Fecha límite</label>
           <input className="inp" type="date" value={f.date} onChange={e=>u('date')(e.target.value)}/></div>
@@ -727,8 +744,31 @@ function App(){
 
   /* CRUD Tareas */
   const saveTask=f=>{
-    if(f.id){setTasks(t=>t.map(x=>x.id===f.id?{...x,...f}:x));notify('Tarea actualizada ✓');}
-    else{setTasks(t=>{const ms=Math.max(0,...t.filter(x=>x.status===f.status).map(x=>x.seq||0));return[...t,{...f,id:Date.now(),seq:ms+1,created:today()}];});notify('Tarea creada ✓');}
+    if(f.id){
+      setTasks(prev=>{
+        const old=prev.find(x=>x.id===f.id);
+        if(!old)return prev.map(x=>x.id===f.id?{...x,...f}:x);
+        const newSeqRaw=f.seq?parseInt(f.seq):null;
+        // Si cambió la posición dentro del mismo grupo de estado, reordenar
+        if(newSeqRaw&&old.status===f.status){
+          const grp=[...prev.filter(t=>t.status===f.status)].sort((a,b)=>(a.seq||99)-(b.seq||99));
+          const clamped=Math.max(1,Math.min(newSeqRaw,grp.length));
+          const sin=grp.filter(t=>t.id!==f.id);
+          sin.splice(clamped-1,0,{...f,seq:clamped});
+          const sm={};sin.forEach((t,i)=>sm[t.id]=i+1);
+          return prev.map(t=>{
+            if(t.id===f.id)return{...t,...f,seq:sm[t.id]??clamped};
+            if(sm[t.id]!==undefined)return{...t,seq:sm[t.id]};
+            return t;
+          });
+        }
+        return prev.map(x=>x.id===f.id?{...x,...f}:x);
+      });
+      notify('Tarea actualizada ✓');
+    } else {
+      setTasks(t=>{const ms=Math.max(0,...t.filter(x=>x.status===f.status).map(x=>x.seq||0));return[...t,{...f,id:Date.now(),seq:ms+1,created:today()}];});
+      notify('Tarea creada ✓');
+    }
     setTaskMod(null);
   };
   const delTask=id=>{if(!window.confirm('¿Eliminar esta tarea?'))return;setTasks(t=>t.filter(x=>x.id!==id));notify('Eliminada',true);};
@@ -777,9 +817,10 @@ function App(){
   /* Filtrado */
   const filtered=useMemo(()=>tasks.filter(t=>{
     const mp=selProj==='all'||t.proj===selProj;
+    const pn=filt.startsWith('p')&&!isNaN(filt.slice(1))?parseInt(filt.slice(1)):null;
     const ms=filt==='all'||filt===t.status
-      ||(filt==='urgent'&&t.prio===1&&t.status!=='done')
-      ||(filt==='overdue'&&isOv(t.date)&&t.status!=='done');
+      ||(filt==='overdue'&&isOv(t.date)&&t.status!=='done')
+      ||(pn!==null&&t.prio===pn);
     return mp&&ms;
   }),[tasks,selProj,filt]);
 
@@ -795,7 +836,7 @@ function App(){
     {l:'Pendientes',v:tasks.filter(t=>t.status==='pending').length,ico:'🔴',c:'var(--red)',bg:'var(--redL)'},
     {l:'En curso',v:tasks.filter(t=>t.status==='partial').length,ico:'🟡',c:'var(--amber)',bg:'var(--amberL)'},
     {l:'Cumplidas',v:tasks.filter(t=>t.status==='done').length,ico:'✅',c:'var(--green)',bg:'var(--greenL)'},
-    {l:'Urgentes P1',v:tasks.filter(t=>t.prio===1&&t.status!=='done').length,ico:'⚡',c:'var(--red)',bg:'var(--redL)'},
+    {l:'Para hoy (P1 Lun)',v:tasks.filter(t=>t.prio===1&&t.status!=='done').length,ico:'⚡',c:'#EF4444',bg:'#FEF2F2'},
     {l:'Vencidas',v:tasks.filter(t=>isOv(t.date)&&t.status!=='done').length,ico:'⏰',c:'#c2410c',bg:'#fff7ed'},
   ];
   const GROUPS=[
@@ -805,7 +846,8 @@ function App(){
   ];
   const FILTERS=[
     {id:'all',l:'Todas'},{id:'pending',l:'Pendientes'},{id:'partial',l:'En curso'},
-    {id:'done',l:'Cumplidas'},{id:'urgent',l:'⚡ P1'},{id:'overdue',l:'⏰ Vencidas'},
+    {id:'done',l:'Cumplidas'},{id:'overdue',l:'⏰ Vencidas'},
+    ...PRIO_DIAS.map(([n,c,l])=>({id:'p'+n,l:`P${n} ${l}`,c})),
   ];
   const curPname=selProj==='all'?'Todo':(projs.find(p=>p.id===selProj)?.name||'Todo');
   const sbProps={projs,tasks,selProj,setSelProj,setPM:setProjMod,askDelProj,pct,doneN};
@@ -877,80 +919,3 @@ function App(){
     <div className="layout">
       <nav className={`sidebar${sbOpen?'':' closed'}`}>
         <SBContent {...sbProps}/>
-      </nav>
-      <main className="main">
-        <div className="toolbar">
-          <span className="toolbar-title">{curPname}</span>
-          <span className="toolbar-sub">{filtered.length} tarea{filtered.length!==1?'s':''}</span>
-          <span className="kb-hint">N nueva · A asistente · Esc cerrar · ⠿ arrastrar</span>
-          <div className="chips">
-            {FILTERS.map(f=><button key={f.id} className={`chip c-${f.id}${filt===f.id?' on':''}`} onClick={()=>setFilt(f.id)}>{f.l}</button>)}
-          </div>
-        </div>
-        {taskGrid}
-      </main>
-      <div className={`ai-panel${aiOpen?' open':''}`}>
-        <div className="ai-hdr">
-          <div><div className="ai-title"><div className="ai-pulse"/>Asistente IA</div><div className="ai-sub">Claude Haiku · creá tareas hablando</div></div>
-          <button onClick={()=>setAiOpen(false)}><Ic n="x" s={16} c="rgba(255,255,255,.6)"/></button>
-        </div>
-        <AIContent {...aiProps}/>
-      </div>
-    </div>
-
-    {/* MOBILE BOTTOM NAV */}
-    <nav className="mob-nav">
-      {[
-        {id:'tasks',label:'Tareas',ico:'list'},
-        {id:'projs',label:'Proyectos',ico:'folder'},
-        {id:'ai',label:'Asistente',ico:'ai'},
-        {id:'kpis',label:'KPIs',ico:'chart'},
-      ].map(tab=><div key={tab.id} className={`mob-nav-item${mobTab===tab.id?' active':''}`}
-        onClick={()=>{
-          if(tab.id==='ai'){setAiSheet(true);}
-          else if(tab.id==='projs'){setDrawer(true);}
-          else setMobTab(tab.id);
-        }}>
-        <Ic n={tab.ico} s={22} c={mobTab===tab.id?'var(--navy)':'var(--slate)'}/>
-        <span>{tab.label}</span>
-      </div>)}
-    </nav>
-
-    {/* FAB */}
-    <button className="fab" onClick={()=>setTaskMod({})}>+</button>
-
-    {/* MOBILE DRAWER (Proyectos) */}
-    <div className={`drawer-bg${drawer?' open':''}`} onClick={()=>setDrawer(false)}/>
-    <div className={`drawer${drawer?' open':''}`}>
-      <div className="drawer-hdr">
-        <span style={{fontSize:14,fontWeight:700,color:'#fff'}}>Proyectos</span>
-        <button onClick={()=>setDrawer(false)}><Ic n="x" s={18} c="rgba(255,255,255,.7)"/></button>
-      </div>
-      <SBContent {...sbProps} setSelProj={v=>{setSelProj(v);setDrawer(false);}}/>
-    </div>
-
-    {/* MOBILE AI SHEET */}
-    <div className={`ai-sheet-bg${aiSheet?' open':''}`} onClick={e=>{if(e.target===e.currentTarget)setAiSheet(false);}}>
-      <div className="ai-sheet">
-        <div className="ai-hdr" style={{borderRadius:'20px 20px 0 0'}}>
-          <div><div className="ai-title"><div className="ai-pulse"/>Asistente IA</div><div className="ai-sub">Dictá o escribí lo que necesitás</div></div>
-          <button onClick={()=>setAiSheet(false)}><Ic n="x" s={16} c="rgba(255,255,255,.6)"/></button>
-        </div>
-        <div style={{flex:1,display:'flex',flexDirection:'column',maxHeight:'75vh',overflow:'hidden'}}>
-          <AIContent {...aiProps} onOpenKey={()=>{setAiSheet(false);setApiMod(true);}}/>
-        </div>
-      </div>
-    </div>
-
-    {/* MODALS */}
-    {taskMod!==null&&<TaskModal t={taskMod?.id?taskMod:null} projs={projs} onClose={()=>setTaskMod(null)} onSave={saveTask}/>}
-    {projMod!==null&&<ProjModal proj={projMod?.id?projMod:null} onClose={()=>setProjMod(null)} onSave={saveProj}/>}
-    {projDelMod&&<ProjDelModal proj={projDelMod.proj} count={projDelMod.count} onClose={()=>setProjDelMod(null)} onDelAll={delProjAll} onDelKeep={delProjKeep}/>}
-    {apiMod&&<ApiKeyModal current={apiKey} onClose={()=>setApiMod(false)} onSave={k=>{setApiKey(k);setApiMod(false);notify(k?'API Key guardada ✓':'API Key eliminada',!k);}}/>}
-    {toast&&<div className="toast" style={{background:toast.err?'var(--redL)':'var(--greenL)',border:`2px solid ${toast.err?'var(--red)':'var(--green)'}`,color:toast.err?'var(--red)':'var(--green)'}}>{toast.err?'✗':'✓'} {toast.msg}</div>}
-  </div>;
-}
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
-</script>
-</body>
-</html>
