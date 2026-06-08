@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- CENTRO DE OPERACIONES — IAGENTES.TECH v5.0 — Mayo 2026 -->
+<!-- CENTRO DE OPERACIONES — IAGENTES.TECH v5.1 — Junio 2026 — Notas por voz -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -24,6 +24,7 @@
   --mob-h:60px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+@keyframes mic-pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4);}70%{box-shadow:0 0 0 8px rgba(239,68,68,0);}}
 body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overscroll-behavior:none;}
 ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
 button{font-family:inherit;cursor:pointer;border:none;background:none;}
@@ -499,6 +500,7 @@ function AIContent({tasks,projs,setTasks,apiKey,onOpenKey}){
         <textarea className="ai-inp" rows={1} placeholder="Escribí o dictá lo que necesitás..."
           value={inp} onChange={e=>setInp(e.target.value)}
           onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}}/>
+        <VoiceButton onTranscript={txt=>{setInp(v=>v?(v+' '+txt):txt);}} style={{borderRadius:8}}/>
         <button className="ai-send" onClick={()=>send()} disabled={!inp.trim()||loading}><Ic n="send" s={14} c="#fff"/></button>
       </div>
     </div>
@@ -591,6 +593,32 @@ function ProjDelModal({proj,count,onClose,onDelAll,onDelKeep}){
   </div>;
 }
 
+
+/* ── VOICE BUTTON ── */
+function VoiceButton({onTranscript,style}){
+  const[listening,setListening]=React.useState(false);
+  const recRef=React.useRef(null);
+  const toggle=()=>{
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){alert('Usá Chrome para dictado por voz.');return;}
+    if(listening){recRef.current?.stop();setListening(false);return;}
+    const rec=new SR();
+    rec.lang='es-AR';rec.continuous=false;rec.interimResults=false;
+    rec.onstart=()=>setListening(true);
+    rec.onresult=e=>{const txt=e.results[0][0].transcript;onTranscript(txt);};
+    rec.onerror=()=>setListening(false);
+    rec.onend=()=>setListening(false);
+    recRef.current=rec;rec.start();
+  };
+  return <button type="button" onClick={toggle} title={listening?'Escuchando... clic para detener':'Dictá una nota (voz)'}
+    style={{width:32,height:32,border:'none',borderRadius:7,cursor:'pointer',flexShrink:0,
+      display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,
+      background:listening?'#ef4444':'var(--blueL)',color:listening?'#fff':'var(--blue)',
+      animation:listening?'mic-pulse 1s infinite':'none',...style}}>
+    {listening?'⏹':'🎙'}
+  </button>;
+}
+
 /* ── TASK MODAL ── */
 function TaskModal({t,projs,onClose,onSave}){
   const isNew=!t?.id;
@@ -629,7 +657,10 @@ function TaskModal({t,projs,onClose,onSave}){
         <div className="fld"><label className="lbl">Fecha límite</label>
           <input className="inp" type="date" value={f.date} onChange={e=>u('date')(e.target.value)}/></div>
         <div className="fld"><label className="lbl">Notas</label>
-          <textarea className="inp" placeholder="Detalles, próximos pasos..." value={f.notes} onChange={e=>u('notes')(e.target.value)}/></div>
+          <div style={{display:'flex',gap:8,alignItems:'flex-start'}}>
+            <textarea className="inp" placeholder="Detalles, próximos pasos..." value={f.notes} onChange={e=>u('notes')(e.target.value)} style={{flex:1,minHeight:80}}/>
+            <VoiceButton onTranscript={txt=>u('notes')(f.notes?(f.notes+' '+txt):txt)}/>
+          </div></div>
       </div>
       <div className="modal-f">
         <button className="btn-cl" onClick={onClose}>Cancelar</button>
@@ -919,84 +950,3 @@ function App(){
     <div className="layout">
       <nav className={`sidebar${sbOpen?'':' closed'}`}>
         <SBContent {...sbProps}/>
-      </nav>
-      <main className="main">
-        <div className="toolbar">
-          <span className="toolbar-title">{curPname}</span>
-          <span className="toolbar-sub">{filtered.length} tarea{filtered.length!==1?'s':''}</span>
-          <span className="kb-hint">N nueva · A asistente · Esc cerrar · ⠿ arrastrar</span>
-          <div className="chips">
-            {FILTERS.map(f=>{
-            const active=filt===f.id;
-            const style=f.c&&active?{background:f.c+'20',color:f.c,borderColor:f.c}:f.c&&!active?{}:{};
-            return <button key={f.id} className={`chip c-${f.id}${active?' on':''}`} style={style} onClick={()=>setFilt(f.id)}>{f.l}</button>;
-          })}
-          </div>
-        </div>
-        {taskGrid}
-      </main>
-      <div className={`ai-panel${aiOpen?' open':''}`}>
-        <div className="ai-hdr">
-          <div><div className="ai-title"><div className="ai-pulse"/>Asistente IA</div><div className="ai-sub">Claude Haiku · creá tareas hablando</div></div>
-          <button onClick={()=>setAiOpen(false)}><Ic n="x" s={16} c="rgba(255,255,255,.6)"/></button>
-        </div>
-        <AIContent {...aiProps}/>
-      </div>
-    </div>
-
-    {/* MOBILE BOTTOM NAV */}
-    <nav className="mob-nav">
-      {[
-        {id:'tasks',label:'Tareas',ico:'list'},
-        {id:'projs',label:'Proyectos',ico:'folder'},
-        {id:'ai',label:'Asistente',ico:'ai'},
-        {id:'kpis',label:'KPIs',ico:'chart'},
-      ].map(tab=><div key={tab.id} className={`mob-nav-item${mobTab===tab.id?' active':''}`}
-        onClick={()=>{
-          if(tab.id==='ai'){setAiSheet(true);}
-          else if(tab.id==='projs'){setDrawer(true);}
-          else setMobTab(tab.id);
-        }}>
-        <Ic n={tab.ico} s={22} c={mobTab===tab.id?'var(--navy)':'var(--slate)'}/>
-        <span>{tab.label}</span>
-      </div>)}
-    </nav>
-
-    {/* FAB */}
-    <button className="fab" onClick={()=>setTaskMod({})}>+</button>
-
-    {/* MOBILE DRAWER (Proyectos) */}
-    <div className={`drawer-bg${drawer?' open':''}`} onClick={()=>setDrawer(false)}/>
-    <div className={`drawer${drawer?' open':''}`}>
-      <div className="drawer-hdr">
-        <span style={{fontSize:14,fontWeight:700,color:'#fff'}}>Proyectos</span>
-        <button onClick={()=>setDrawer(false)}><Ic n="x" s={18} c="rgba(255,255,255,.7)"/></button>
-      </div>
-      <SBContent {...sbProps} setSelProj={v=>{setSelProj(v);setDrawer(false);}}/>
-    </div>
-
-    {/* MOBILE AI SHEET */}
-    <div className={`ai-sheet-bg${aiSheet?' open':''}`} onClick={e=>{if(e.target===e.currentTarget)setAiSheet(false);}}>
-      <div className="ai-sheet">
-        <div className="ai-hdr" style={{borderRadius:'20px 20px 0 0'}}>
-          <div><div className="ai-title"><div className="ai-pulse"/>Asistente IA</div><div className="ai-sub">Dictá o escribí lo que necesitás</div></div>
-          <button onClick={()=>setAiSheet(false)}><Ic n="x" s={16} c="rgba(255,255,255,.6)"/></button>
-        </div>
-        <div style={{flex:1,display:'flex',flexDirection:'column',maxHeight:'75vh',overflow:'hidden'}}>
-          <AIContent {...aiProps} onOpenKey={()=>{setAiSheet(false);setApiMod(true);}}/>
-        </div>
-      </div>
-    </div>
-
-    {/* MODALS */}
-    {taskMod!==null&&<TaskModal t={taskMod?.id?taskMod:null} projs={projs} onClose={()=>setTaskMod(null)} onSave={saveTask}/>}
-    {projMod!==null&&<ProjModal proj={projMod?.id?projMod:null} onClose={()=>setProjMod(null)} onSave={saveProj}/>}
-    {projDelMod&&<ProjDelModal proj={projDelMod.proj} count={projDelMod.count} onClose={()=>setProjDelMod(null)} onDelAll={delProjAll} onDelKeep={delProjKeep}/>}
-    {apiMod&&<ApiKeyModal current={apiKey} onClose={()=>setApiMod(false)} onSave={k=>{setApiKey(k);setApiMod(false);notify(k?'API Key guardada ✓':'API Key eliminada',!k);}}/>}
-    {toast&&<div className="toast" style={{background:toast.err?'var(--redL)':'var(--greenL)',border:`2px solid ${toast.err?'var(--red)':'var(--green)'}`,color:toast.err?'var(--red)':'var(--green)'}}>{toast.err?'✗':'✓'} {toast.msg}</div>}
-  </div>;
-}
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
-</script>
-</body>
-</html>
