@@ -1,964 +1,1031 @@
 <!DOCTYPE html>
-<!-- CENTRO DE OPERACIONES — IAGENTES.TECH v5.1 — Junio 2026 — Voz -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IAGENTES.TECH — Centro de Operaciones</title>
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0A2540">
-<title>Centro de Operaciones · IAGENTES.TECH</title>
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Operaciones">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-:root{
-  --navy:#0A2540;--blue:#2563EB;--blue2:#3B82F6;--blueL:#EFF6FF;--blueM:#BFDBFE;
-  --green:#16a34a;--greenL:#dcfce7;
-  --amber:#b45309;--amberL:#fef3c7;
-  --red:#dc2626;--redL:#fee2e2;
-  --slate:#64748B;--slate2:#94A3B8;--slate3:#CBD5E1;
-  --bg:#F1F5F9;--bg2:#F8FAFC;--white:#fff;--text:#0F172A;
-  --border:#E2E8F0;--border2:#CBD5E1;
-  --mob-h:60px;
-}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-@keyframes mic-pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4);}70%{box-shadow:0 0 0 8px rgba(239,68,68,0);}}
-body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overscroll-behavior:none;}
-::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
-button{font-family:inherit;cursor:pointer;border:none;background:none;}
-input,textarea,select{font-family:inherit;}
-
-.hdr{position:sticky;top:0;z-index:200;background:var(--navy);height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;box-shadow:0 2px 16px rgba(0,0,0,.25);}
-.logo{display:flex;align-items:center;gap:9px;}
-.logo-box{width:32px;height:32px;border-radius:8px;background:var(--blue2);display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;}
-.logo-box .ia{font-size:12px;font-weight:800;color:#fff;letter-spacing:-1px;}
-.logo-box::after{content:'';position:absolute;top:5px;right:5px;width:5px;height:5px;border-radius:50%;background:#93C5FD;box-shadow:0 0 5px #93C5FD;}
-.logo-name .n1{font-size:14px;font-weight:800;letter-spacing:-.4px;color:#fff;}
-.logo-name .n1 em{color:#60A5FA;font-style:normal;}
-.logo-name .n2{font-size:9px;color:rgba(255,255,255,.38);letter-spacing:2px;text-transform:uppercase;}
-.hdr-pill{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:4px 12px;font-size:11px;color:rgba(255,255,255,.6);}
-.hdr-right{display:flex;align-items:center;gap:6px;}
-.btn-new{display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;background:var(--blue2);color:#fff;border:none;cursor:pointer;}
-.btn-new:hover{background:#1d4ed8;}
-.btn-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.65);transition:all .15s;cursor:pointer;}
-.btn-icon:hover{background:rgba(255,255,255,.18);color:#fff;}
-.btn-icon.on{background:var(--blue2);border-color:var(--blue2);color:#fff;}
-.btn-icon.ok{background:rgba(16,185,129,.2);border-color:rgba(16,185,129,.3);}
-.btn-icon.warn{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.25);}
-
-.layout{display:flex;height:calc(100vh - 54px);}
-
-.sidebar{width:216px;flex-shrink:0;background:var(--white);border-right:1px solid var(--border);overflow-y:auto;transition:width .25s;}
-.sidebar.closed{width:0;overflow:hidden;}
-.sb-inner{padding:12px 8px;}
-.sb-lbl{font-size:9px;font-weight:700;color:var(--slate);letter-spacing:2px;text-transform:uppercase;padding:0 8px;margin:12px 0 5px;display:flex;align-items:center;justify-content:space-between;}
-.sb-add{width:20px;height:20px;border-radius:5px;background:var(--blueL);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0;}
-.sb-add:hover{background:var(--blue2);color:#fff;}
-.nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:9px;font-size:13px;color:var(--slate);cursor:pointer;transition:all .15s;border:1.5px solid transparent;margin-bottom:2px;position:relative;}
-.nav-item:hover{background:var(--bg);}
-.nav-item.active{background:var(--blueL);color:var(--navy);border-color:var(--blueM);font-weight:600;}
-.nav-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
-.nav-body{flex:1;min-width:0;}
-.nav-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.nav-badge{font-size:10px;font-weight:700;font-family:'DM Mono',monospace;padding:2px 7px;border-radius:9px;background:var(--border);color:var(--slate);flex-shrink:0;}
-.nav-item.active .nav-badge{background:rgba(37,99,235,.15);color:var(--navy);}
-.nav-acts{display:none;gap:2px;flex-shrink:0;}
-.nav-item:hover .nav-acts{display:flex;}
-.nav-act{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;color:var(--slate);transition:all .12s;}
-.nav-act:hover{background:var(--border2);}
-.nav-act.del:hover{background:var(--redL);color:var(--red);}
-.sb-div{height:1px;background:var(--border);margin:10px 4px;}
-.pbar{height:4px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:4px;}
-.pbar-fill{height:100%;background:var(--blue2);border-radius:3px;transition:width .4s;}
-
-.main{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
-@media(max-width:700px){.main{padding-bottom:var(--mob-h);}}
-
-.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 14px;background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:90;}
-.toolbar-title{font-size:15px;font-weight:800;color:var(--navy);}
-.toolbar-sub{font-size:12px;color:var(--slate);font-family:'DM Mono',monospace;}
-.chips{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap;}
-.chip{padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;border:1.5px solid var(--border);background:var(--white);color:var(--slate);cursor:pointer;white-space:nowrap;}
-.chip.c-all.on{background:var(--navy);color:#fff;border-color:var(--navy);}
-.chip.c-pending.on{background:var(--redL);color:var(--red);border-color:var(--red);}
-.chip.c-partial.on{background:var(--amberL);color:var(--amber);border-color:var(--amber);}
-.chip.c-done.on{background:var(--greenL);color:var(--green);border-color:var(--green);}
-.chip.c-urgent.on{background:var(--redL);color:var(--red);border-color:var(--red);}
-.chip.c-overdue.on{background:#fff7ed;color:#c2410c;border-color:#fb923c;}
-
-.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:12px 14px;}
-@media(max-width:700px){.kpis{grid-template-columns:repeat(2,1fr);}}
-.kpi{background:var(--white);border:2px solid var(--border);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:9px;}
-.kpi-ico{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
-.kpi-val{font-size:22px;font-weight:800;line-height:1;}
-.kpi-lbl{font-size:11px;color:var(--slate);font-weight:500;}
-
-.gbar{padding:0 14px 10px;}
-.gbar-track{height:7px;background:var(--border);border-radius:4px;overflow:hidden;}
-.gbar-fill{height:100%;background:linear-gradient(90deg,var(--green),#4ade80);border-radius:4px;transition:width .5s;}
-.gbar-lbl{font-size:11px;color:var(--slate);margin-top:4px;font-family:'DM Mono',monospace;}
-
-.group{margin:0 14px 16px;}
-.group-head{display:flex;align-items:center;gap:10px;padding:9px 0 7px;border-bottom:2px solid;}
-.group-stripe{width:5px;height:20px;border-radius:3px;flex-shrink:0;}
-.group-lbl{font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;flex:1;}
-.group-count{font-size:11px;font-weight:700;font-family:'DM Mono',monospace;padding:2px 9px;border-radius:8px;}
-.group-rows{display:flex;flex-direction:column;gap:6px;padding-top:8px;}
-
-/* TASK ROW */
-.trow-wrap{position:relative;border-radius:10px;overflow:hidden;}
-.swipe-actions{position:absolute;right:0;top:0;bottom:0;display:flex;z-index:1;}
-.swipe-btn{width:60px;display:flex;align-items:center;justify-content:center;font-size:18px;border:none;cursor:pointer;}
-.sw-edit{background:var(--blue2);}
-.sw-del{background:var(--red);}
-
-.trow{background:var(--white);border:2px solid var(--border);border-left-width:5px;border-radius:10px;display:flex;align-items:stretch;transition:box-shadow .18s;overflow:hidden;position:relative;z-index:2;cursor:default;}
-.trow.prio-1{border-left-color:#EF4444;}
-.trow.prio-2{border-left-color:#F97316;}
-.trow.prio-3{border-left-color:#F59E0B;}
-.trow.prio-4{border-left-color:#22C55E;}
-.trow.prio-5{border-left-color:#3B82F6;}
-.trow.prio-6{border-left-color:#8B5CF6;}
-.trow.prio-7{border-left-color:#EC4899;}
-.trow.st-done{border-left-color:var(--green);opacity:.7;}
-.trow:hover{box-shadow:0 3px 12px rgba(0,0,0,.09);}
-.trow.drag-over{border-top:3px solid var(--blue2);}
-.drag-handle{display:flex;align-items:center;justify-content:center;width:26px;flex-shrink:0;cursor:grab;color:var(--slate3);font-size:15px;transition:color .15s;}
-.drag-handle:hover{color:var(--slate);}
-.drag-handle:active{cursor:grabbing;}
-.seq-num{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--border);color:var(--slate);font-size:11px;font-weight:700;font-family:'DM Mono',monospace;flex-shrink:0;margin:auto 4px;}
-.trow-body{flex:1;padding:9px 12px;display:flex;flex-direction:column;gap:4px;min-width:0;}
-.trow-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
-.trow-name{font-size:14px;font-weight:600;color:var(--text);line-height:1.3;}
-.trow-name.done{text-decoration:line-through;opacity:.45;}
-.trow-name.editable:hover{color:var(--blue);cursor:text;}
-.inline-inp{font-size:14px;font-weight:600;color:var(--text);border:1.5px solid var(--blue2);border-radius:6px;padding:2px 7px;outline:none;width:100%;background:var(--blueL);}
-.trow-note{font-size:12px;color:var(--slate);line-height:1.4;padding:3px 8px;background:var(--bg2);border-left:3px solid var(--border2);border-radius:0 5px 5px 0;}
-.badge-proj{font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:2px 8px;border-radius:4px;}
-.badge-prio{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;font-family:'DM Mono',monospace;}
-.p1{background:#FEF2F2;color:#EF4444;}
-.p2{background:#FFF7ED;color:#F97316;}
-.p3{background:#FFFBEB;color:#F59E0B;}
-.p4{background:#F0FDF4;color:#22C55E;}
-.p5{background:#EFF6FF;color:#3B82F6;}
-.p6{background:#F5F3FF;color:#8B5CF6;}
-.p7{background:#FDF2F8;color:#EC4899;}
-.badge-date{font-size:10px;color:var(--slate);font-family:'DM Mono',monospace;}
-.badge-date.ov{color:var(--red);font-weight:700;}
-.badge-ov{background:var(--redL);color:var(--red);font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;}
-.trow-right{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:4px;padding:9px 10px;flex-shrink:0;border-left:1px solid var(--border);background:var(--bg2);}
-.st-btns{display:flex;flex-direction:column;gap:3px;}
-.st-btn{padding:4px 8px;border-radius:6px;font-size:11px;font-weight:700;border:1.5px solid var(--border);background:var(--white);transition:all .15s;cursor:pointer;text-align:center;white-space:nowrap;width:90px;}
-.st-btn.s-pending{color:var(--red);}
-.st-btn.s-pending:hover,.st-btn.s-pending.active{background:var(--red);color:#fff;border-color:var(--red);}
-.st-btn.s-partial{color:var(--amber);}
-.st-btn.s-partial:hover,.st-btn.s-partial.active{background:var(--amber);color:#fff;border-color:var(--amber);}
-.st-btn.s-done{color:var(--green);}
-.st-btn.s-done:hover,.st-btn.s-done.active{background:var(--green);color:#fff;border-color:var(--green);}
-.act-btns{display:flex;gap:4px;}
-.act-btn{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--slate);transition:all .15s;border:1px solid transparent;}
-.act-btn:hover{background:var(--bg);border-color:var(--border);}
-.act-btn.del:hover{background:var(--redL);color:var(--red);border-color:var(--red);}
-.empty-state{text-align:center;padding:28px;color:var(--slate);font-size:13px;}
-.kb-hint{font-size:10px;color:var(--slate3);padding:3px 8px;background:var(--bg2);border-radius:5px;font-family:'DM Mono',monospace;}
-@media(max-width:700px){.kb-hint,.drag-handle{display:none!important;}}
-
-/* AI PANEL */
-.ai-panel{width:0;flex-shrink:0;background:var(--white);border-left:1px solid var(--border);display:flex;flex-direction:column;transition:width .28s;overflow:hidden;}
-.ai-panel.open{width:296px;}
-@media(max-width:700px){.ai-panel{display:none!important;}}
-.ai-hdr{padding:12px 14px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--navy),#0D2F4F);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;}
-.ai-title{font-size:13px;font-weight:700;color:#fff;display:flex;align-items:center;gap:7px;}
-.ai-pulse{width:7px;height:7px;border-radius:50%;background:#10B981;animation:pulse 2s infinite;}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.4)}70%{box-shadow:0 0 0 8px transparent}100%{box-shadow:0 0 0 0 transparent}}
-.ai-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:1px;}
-.ai-msgs{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;}
-.msg{max-width:92%;animation:mIn .2s ease;}
-@keyframes mIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-.msg-u{align-self:flex-end;}.msg-a{align-self:flex-start;}
-.msg-bub{padding:8px 11px;border-radius:12px;font-size:13px;line-height:1.5;}
-.msg-u .msg-bub{background:var(--navy);color:#fff;border-radius:12px 12px 2px 12px;}
-.msg-a .msg-bub{background:var(--bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px 12px 12px 2px;}
-.msg-t{font-size:10px;color:var(--slate);margin-top:2px;font-family:'DM Mono',monospace;}
-.msg-u .msg-t{text-align:right;}
-.ai-foot{padding:10px;border-top:1px solid var(--border);flex-shrink:0;}
-.ai-sugs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:7px;}
-.ai-sug{font-size:11px;padding:4px 8px;border-radius:6px;background:var(--bg);border:1px solid var(--border);color:var(--slate);cursor:pointer;}
-.ai-sug:hover{background:var(--blueL);border-color:var(--blueM);color:var(--navy);}
-.ai-row{display:flex;gap:6px;align-items:flex-end;}
-.ai-inp{flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;background:var(--bg2);resize:none;outline:none;line-height:1.4;max-height:80px;overflow-y:auto;color:var(--text);}
-.ai-inp:focus{border-color:var(--blue2);background:var(--white);}
-.ai-send{width:34px;height:34px;border-radius:8px;flex-shrink:0;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;}
-.ai-send:hover:not(:disabled){background:var(--blue2);}
-.ai-send:disabled{opacity:.4;cursor:not-allowed;}
-.dots{display:flex;gap:4px;padding:4px 0;}
-.dot{width:6px;height:6px;border-radius:50%;background:var(--slate2);animation:boun .8s infinite alternate;}
-.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
-@keyframes boun{from{transform:translateY(0)}to{transform:translateY(-5px)}}
-.no-key-warn{background:var(--amberL);border:1px solid #fcd34d;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--amber);margin:8px 10px;line-height:1.5;}
-.no-key-warn strong{display:block;margin-bottom:4px;}
-.no-key-warn button{background:var(--amber);color:#fff;border:none;padding:5px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;margin-top:6px;width:100%;}
-
-/* MOBILE NAV */
-.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:var(--mob-h);background:var(--white);border-top:1px solid var(--border);z-index:300;padding-bottom:env(safe-area-inset-bottom);}
-@media(max-width:700px){
-  .mob-nav{display:flex;}
-  .sidebar{display:none!important;}
-  .hdr-pill,.btn-new{display:none!important;}
-}
-.mob-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10px;font-weight:600;color:var(--slate);cursor:pointer;padding:6px 4px;}
-.mob-nav-item.active{color:var(--navy);}
-
-.fab{display:none;position:fixed;bottom:calc(var(--mob-h) + 14px);right:16px;z-index:290;width:52px;height:52px;border-radius:50%;background:var(--navy);color:#fff;font-size:26px;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(10,37,64,.35);border:none;cursor:pointer;}
-@media(max-width:700px){.fab{display:flex;}}
-
-/* MOBILE DRAWER */
-.drawer-bg{display:none;position:fixed;inset:0;background:rgba(10,37,64,.6);z-index:400;backdrop-filter:blur(4px);}
-.drawer-bg.open{display:block;}
-.drawer{position:fixed;top:0;left:-280px;bottom:0;width:280px;background:var(--white);z-index:401;transition:left .28s;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom);}
-.drawer.open{left:0;}
-.drawer-hdr{padding:12px 14px;background:var(--navy);display:flex;justify-content:space-between;align-items:center;}
-
-/* MOBILE AI SHEET */
-.ai-sheet-bg{display:none;position:fixed;inset:0;background:rgba(10,37,64,.6);z-index:500;backdrop-filter:blur(4px);}
-.ai-sheet-bg.open{display:flex;flex-direction:column;justify-content:flex-end;}
-.ai-sheet{background:var(--white);border-radius:20px 20px 0 0;max-height:88vh;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom);}
-
-/* MODALS */
-.ov-bg{position:fixed;inset:0;background:rgba(10,37,64,.7);z-index:600;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(6px);}
-.modal{background:var(--white);border-radius:16px;width:100%;max-width:520px;box-shadow:0 24px 60px rgba(0,0,0,.22);display:flex;flex-direction:column;max-height:92vh;animation:mIn .2s ease;}
-.modal.sm{max-width:380px;}
-.modal-h{padding:13px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--navy);border-radius:16px 16px 0 0;flex-shrink:0;}
-.modal-t{font-size:15px;font-weight:700;color:#fff;}
-.modal-b{padding:18px 20px;overflow-y:auto;flex:1;}
-.modal-f{padding:11px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0;background:var(--bg2);}
-.fld{margin-bottom:14px;}
-.lbl{font-size:10px;font-weight:700;color:var(--slate);letter-spacing:.8px;text-transform:uppercase;display:block;margin-bottom:5px;}
-.inp{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;color:var(--text);background:var(--white);outline:none;transition:border-color .2s;}
-.inp:focus{border-color:var(--blue2);box-shadow:0 0 0 3px rgba(59,130,246,.1);}
-textarea.inp{resize:vertical;min-height:74px;}
-select.inp{cursor:pointer;}
-.inp::placeholder{color:var(--slate3);}
-.seg{display:flex;gap:6px;flex-wrap:wrap;}
-.sb{padding:7px 12px;border-radius:8px;font-size:13px;font-weight:500;border:1.5px solid var(--border);color:var(--slate);cursor:pointer;background:var(--white);}
-.btn-cl{padding:9px 16px;border-radius:9px;font-size:13px;font-weight:500;background:var(--bg);color:var(--slate);border:1.5px solid var(--border);cursor:pointer;}
-.btn-cl:hover{background:var(--border);}
-.btn-sv{padding:9px 20px;border-radius:9px;font-size:13px;font-weight:600;background:var(--navy);color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;border:none;}
-.btn-sv:hover:not(:disabled){background:var(--blue2);}
-.btn-sv:disabled{opacity:.5;cursor:not-allowed;}
-.btn-danger{padding:9px 16px;border-radius:9px;font-size:13px;font-weight:600;background:var(--red);color:#fff;cursor:pointer;border:none;}
-.btn-danger:hover{background:#b91c1c;}
-.color-grid{display:flex;gap:8px;flex-wrap:wrap;}
-.color-dot{width:28px;height:28px;border-radius:50%;cursor:pointer;transition:transform .15s;border:3px solid transparent;}
-.color-dot:hover{transform:scale(1.15);}
-.color-dot.sel{border-color:var(--text);}
-.warn-box{background:#fff7ed;border:1.5px solid #fb923c;border-radius:9px;padding:11px 13px;font-size:13px;color:#9a3412;margin-bottom:13px;line-height:1.5;}
-.toast{position:fixed;bottom:80px;right:16px;z-index:700;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;box-shadow:0 6px 20px rgba(0,0,0,.12);animation:mIn .3s ease;}
-@media(min-width:701px){.toast{bottom:20px;}}
-.apikey-note{background:var(--amberL);border:1.5px solid #fcd34d;border-radius:9px;padding:11px 13px;font-size:13px;color:var(--amber);line-height:1.6;margin-bottom:14px;}
-.apikey-note code{background:rgba(180,83,9,.12);padding:1px 5px;border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;}
+:root{--c-navy:#0A2540;--c-navy-light:#123a63;--c-blue:#3B82F6;--c-bg:#f1f5f9;--c-text:#1e293b;--c-radius-lg:12px;--c-radius-sm:8px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--c-bg);color:var(--c-text);min-height:100vh;padding-bottom:48px;}
+/* ── HEADER ── */
+.hdr{background:linear-gradient(135deg,var(--c-navy) 0%,var(--c-navy-light) 100%);border-bottom:3px solid var(--c-blue);padding:11px 28px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;position:sticky;top:0;z-index:200;}
+.logo-wrap{display:flex;align-items:center;gap:8px;}
+.logo-text{font-size:1.15rem;font-weight:900;line-height:1;white-space:nowrap;}
+.logo-text .li{color:#3B82F6;font-style:italic;}
+.logo-text .la{color:#ffffff;}
+.logo-text .lt{color:#3B82F6;}
+.logo-tag{background:#3B82F6;color:#fff;font-size:.55rem;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.5px;white-space:nowrap;}
+.hdr-center{text-align:center;font-size:.85rem;font-weight:600;color:#e2e8f0;}
+.hdr-right{}
+/* ── MAIN ── */
+.main{padding:14px 28px;max-width:1500px;margin:0 auto;}
+/* ── SECTION TITLE ── */
+.stitle{font-size:.67rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:10px;margin-top:20px;display:flex;align-items:center;gap:8px;}
+.stitle::after{content:'';flex:1;height:1px;background:#e2e8f0;}
+.stitle-sub{font-size:.6rem;color:#94a3b8;font-weight:400;text-transform:none;letter-spacing:0;}
+/* ── DOS COLUMNAS ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+/* ── TILES CLIENTES ── */
+.client-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.ctile{border-radius:var(--c-radius-lg);padding:12px 10px;cursor:pointer;transition:transform .15s,box-shadow .15s;min-height:84px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 2px 6px rgba(0,0,0,.18);position:relative;}
+.ctile:hover{transform:scale(1.03);box-shadow:0 4px 14px rgba(0,0,0,.25);}
+.ctile-hint{position:absolute;top:5px;right:6px;font-size:.5rem;opacity:.5;}
+.ctile-name{font-size:.74rem;font-weight:800;line-height:1.2;}
+.ctile-status{font-size:.6rem;font-weight:600;margin-top:3px;opacity:.85;}
+.ctile-badge{font-size:.55rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;background:rgba(0,0,0,.18);padding:2px 6px;border-radius:4px;align-self:flex-start;margin-top:6px;}
+.tc-green{background:#15803d;color:#fff;} .tc-yellow{background:#fde047;color:#000;} .tc-yellow .ctile-status{opacity:.65;}
+.tc-red{background:#dc2626;color:#fff;}   .tc-orange{background:#ea580c;color:#fff;}
+.tc-blue{background:#1d4ed8;color:#fff;}  .tc-gray{background:#94a3b8;color:#000;}
+.add-client-btn{margin-top:8px;background:#f1f5f9;border:1px dashed #cbd5e1;border-radius:8px;padding:7px 14px;font-size:.72rem;font-weight:600;color:#64748b;cursor:pointer;width:100%;}
+.add-client-btn:hover{background:#e2e8f0;}
+/* ── TAREAS ── */
+.tasks-panel{background:#fff;border-radius:var(--c-radius-lg);box-shadow:0 1px 4px rgba(0,0,0,.08);overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .2s,transform .2s;}
+.tasks-panel:hover{box-shadow:0 6px 18px rgba(0,0,0,.12);transform:translateY(-2px);}
+.tasks-tabs{display:flex;border-bottom:1px solid #e2e8f0;flex-shrink:0;}
+.ttab{flex:1;padding:10px 4px;font-size:.67rem;font-weight:700;text-align:center;cursor:pointer;color:#94a3b8;border:none;border-bottom:3px solid transparent;background:none;transition:all .15s;}
+.ttab:hover{background:#f8fafc;}
+.ttab.on{color:#0f172a;}
+.ttab.tp1.on{border-bottom-color:#dc2626;} .ttab.tp2.on{border-bottom-color:#ea580c;} .ttab.tp3.on{border-bottom-color:#ca8a04;}
+.tasks-body{padding:8px;max-height:340px;overflow-y:auto;flex:1;}
+.tgroup{display:none;} .tgroup.on{display:block;}
+.empty-msg{text-align:center;padding:18px;font-size:.75rem;color:#cbd5e1;}
+.titem{display:flex;align-items:flex-start;gap:7px;padding:8px 10px;border-radius:8px;margin-bottom:5px;background:#f8fafc;border:1px solid #e2e8f0;transition:background .15s;}
+.titem:hover{background:#f1f5f9;} .titem.tdone{opacity:.35;} .titem.tdone .ttext-main{text-decoration:line-through;}
+.pbadge{flex-shrink:0;font-size:.58rem;font-weight:800;padding:2px 5px;border-radius:4px;margin-top:2px;color:#fff;}
+.bp1{background:#dc2626;} .bp2{background:#ea580c;} .bp3{background:#ca8a04;}
+.tnum{flex-shrink:0;width:18px;height:18px;border-radius:50%;background:#e2e8f0;font-size:.6rem;font-weight:700;display:flex;align-items:center;justify-content:center;color:#475569;margin-top:1px;}
+.tcontent{flex:1;min-width:0;}
+.ttext-main{font-size:.78rem;font-weight:600;color:#1e293b;line-height:1.3;word-break:break-word;}
+.ttext-meta{font-size:.62rem;color:#94a3b8;margin-top:1px;}
+.tedit-inp{width:100%;font-size:.78rem;font-weight:600;border:1.5px solid #3B82F6;border-radius:6px;padding:3px 7px;outline:none;background:#fff;color:#1e293b;}
+.tbtns{display:flex;gap:4px;flex-shrink:0;margin-top:1px;}
+.tbtn{width:24px;height:24px;border-radius:5px;border:none;font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;font-weight:700;}
+.tb-check{background:#dcfce7;color:#15803d;} .tb-check:hover{background:#bbf7d0;}
+.tb-edit{background:#dbeafe;color:#1d4ed8;}  .tb-edit:hover{background:#bfdbfe;}
+.tb-del{background:#fee2e2;color:#dc2626;}   .tb-del:hover{background:#fecaca;}
+.tb-save{background:#dbeafe;color:#1d4ed8;width:auto;padding:0 8px;font-size:.62rem;}
+.tb-cancel{background:#f1f5f9;color:#64748b;} .tb-cancel:hover{background:#e2e8f0;}
+.titem.editing{align-items:flex-start;padding:10px;}
+@media(max-width:500px){.tbtn{min-width:32px;min-height:32px;}.titem{padding:8px 6px;gap:5px;}}
+.tasks-add{padding:8px;border-top:1px solid #e2e8f0;display:flex;gap:6px;flex-shrink:0;}
+.tasks-add input{flex:1;font-size:.75rem;border:1px solid #e2e8f0;border-radius:6px;padding:6px 10px;outline:none;background:#f8fafc;}
+.tasks-add input:focus{border-color:#3B82F6;}
+.tasks-add button{background:#3B82F6;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.72rem;font-weight:700;cursor:pointer;}
+/* ── CASH FLOW ── */
+.cf-wrap{background:#fff;border-radius:var(--c-radius-lg);box-shadow:0 1px 4px rgba(0,0,0,.08);overflow:hidden;transition:box-shadow .2s,transform .2s;}
+.cf-wrap:hover{box-shadow:0 6px 18px rgba(0,0,0,.12);transform:translateY(-2px);}
+.cf-table{width:100%;border-collapse:collapse;}
+.cf-table th{background:#0A2540;color:#e2e8f0;font-size:.67rem;font-weight:700;text-align:center;padding:10px 12px;letter-spacing:.5px;text-transform:uppercase;border-right:1px solid #1e3a5f;}
+.cf-table th:first-child{text-align:left;}
+.cf-table td{padding:9px 12px;font-size:.78rem;border-bottom:1px solid #f1f5f9;border-right:1px solid #f1f5f9;text-align:right;color:#1e293b;cursor:pointer;transition:background .1s;}
+.cf-table td:first-child{text-align:left;font-weight:600;color:#334155;cursor:pointer;}
+.cf-table td:first-child:hover{background:#f0f9ff;}
+.cf-table td:hover:not(:first-child){background:#eff6ff;}
+.cf-name-edit-wrap{display:flex;gap:4px;align-items:center;padding:4px 8px;}
+.cf-name-inp{flex:1;font-size:.75rem;font-weight:700;border:1.5px solid #3B82F6;border-radius:4px;padding:5px 8px;outline:none;background:#fff;color:#1e293b;}
+.cf-del-row{background:#fee2e2;color:#dc2626;border:none;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:.7rem;font-weight:700;flex-shrink:0;}
+.cf-del-row:hover{background:#fecaca;}
+.cf-table td.editing{padding:0;}
+.cf-table td.editing input{width:100%;border:2px solid #3B82F6;border-radius:0;padding:9px 12px;font-size:.78rem;text-align:right;outline:none;background:#eff6ff;}
+.cf-total-row td{background:#f8fafc;font-weight:800;font-size:.78rem;color:#0f172a;cursor:default !important;}
+.cf-total-row td:hover{background:#f8fafc !important;}
+.cf-total-col{background:#f0fdf4 !important;font-weight:800;color:#15803d !important;}
+.cf-total-row .cf-total-col{background:#dcfce7 !important;color:#14532d !important;}
+.cf-zero{color:#cbd5e1 !important;}
+.cf-positive{color:#15803d !important;font-weight:700;}
+.cf-actions{display:flex;gap:8px;padding:10px 14px;border-top:1px solid #f1f5f9;align-items:center;}
+.cf-add-row{background:#f1f5f9;border:1px dashed #cbd5e1;border-radius:6px;padding:5px 12px;font-size:.72rem;font-weight:600;color:#64748b;cursor:pointer;}
+.cf-add-row:hover{background:#e2e8f0;}
+/* ── CANAL ── */
+.canal-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;}
+.canal-tile{background:#fff;border-radius:var(--c-radius-lg);padding:14px 10px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.07);border-top:3px solid #2563eb;transition:box-shadow .2s,transform .2s;}
+.canal-tile:hover{box-shadow:0 6px 18px rgba(0,0,0,.12);transform:translateY(-2px);}
+.canal-count{font-size:1.7rem;font-weight:800;color:#0f172a;}
+.canal-pct{font-size:.65rem;font-weight:700;color:#2563eb;margin-top:1px;}
+.canal-label{font-size:.59rem;color:#94a3b8;margin-top:3px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
+/* ── AGENDA PERSONAL ── */
+.pers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;}
+.ptile{background:#fff;border-radius:var(--c-radius-lg);padding:12px;box-shadow:0 1px 4px rgba(0,0,0,.07);display:flex;flex-direction:column;gap:7px;border-left:4px solid #e2e8f0;}
+.ptile.pp1{border-left-color:#dc2626;} .ptile.pp2{border-left-color:#ea580c;}
+.ptile.pp3{border-left-color:#ca8a04;} .ptile.pp4{border-left-color:#06b6d4;}
+.ptop{display:flex;align-items:flex-start;gap:6px;}
+.pbadge-p{flex-shrink:0;font-size:.6rem;font-weight:800;padding:2px 6px;border-radius:4px;color:#fff;cursor:pointer;margin-top:1px;user-select:none;}
+.pbadge-p:hover{opacity:.8;}
+.pp1 .pbadge-p{background:#dc2626;} .pp2 .pbadge-p{background:#ea580c;}
+.pp3 .pbadge-p{background:#ca8a04;} .pp4 .pbadge-p{background:#06b6d4;color:#000;}
+.pname{flex:1;font-size:.78rem;font-weight:700;color:#1e293b;line-height:1.3;word-break:break-word;}
+.pedit-inp{flex:1;font-size:.78rem;font-weight:600;border:1.5px solid #3B82F6;border-radius:6px;padding:2px 6px;outline:none;background:#fff;color:#1e293b;}
+.pcheck{width:20px;height:20px;border-radius:4px;border:2px solid #cbd5e1;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:transparent;transition:all .2s;flex-shrink:0;}
+.pcheck:hover{border-color:#15803d;}
+.pcheck.checked{background:#15803d;border-color:#15803d;color:#fff;}
+.pdel{width:20px;height:20px;border-radius:4px;border:none;background:#fee2e2;color:#dc2626;font-size:.65rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pdel:hover{background:#fecaca;}
+.pedit-save{height:20px;padding:0 6px;border-radius:4px;border:none;background:#dbeafe;color:#1d4ed8;font-size:.6rem;font-weight:700;cursor:pointer;}
+.pers-add{display:flex;gap:6px;margin-top:8px;align-items:center;}
+.pers-add input{flex:1;font-size:.75rem;border:1px solid #e2e8f0;border-radius:6px;padding:7px 10px;outline:none;background:#fff;}
+.pers-add input:focus{border-color:#3B82F6;}
+.pers-add button{background:#0A2540;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:.75rem;font-weight:700;cursor:pointer;}
+.mic-btn{width:36px;height:36px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.mic-btn:hover{background:#f1f5f9;}
+.mic-btn.recording{background:#dc2626;border-color:#dc2626;animation:pulse-red 1s infinite;}
+@keyframes pulse-red{0%,100%{opacity:1}50%{opacity:.6}}
+/* ── AGENTES ── */
+.agent-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+@media(max-width:900px){.agent-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:500px){.agent-grid{grid-template-columns:repeat(2,1fr);}}
+.atile{border-radius:var(--c-radius-lg);padding:11px 10px;cursor:pointer;transition:transform .15s,box-shadow .15s;min-height:72px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 2px 6px rgba(0,0,0,.15);}
+.atile:hover{transform:scale(1.03);box-shadow:0 4px 14px rgba(0,0,0,.22);}
+.atile-name{font-size:.7rem;font-weight:800;line-height:1.2;}
+.atile-badge{font-size:.52rem;font-weight:800;letter-spacing:.4px;text-transform:uppercase;background:rgba(0,0,0,.2);padding:2px 6px;border-radius:4px;align-self:flex-start;margin-top:6px;}
+.at-green{background:#15803d;color:#fff;} .at-blue{background:#1d4ed8;color:#fff;}
+.at-orange{background:#ea580c;color:#fff;} .at-gray{background:#64748b;color:#fff;}
+.at-star{background:#0A2540;color:#fff;border:2px solid #3B82F6;}
+.am-statusbadge{display:inline-block;font-size:.65rem;font-weight:700;padding:3px 12px;border-radius:20px;color:#fff;margin-bottom:12px;}
+.am-pitch{background:#f0f9ff;border-left:3px solid #3B82F6;padding:10px 14px;font-size:.82rem;font-style:italic;color:#1e40af;border-radius:0 8px 8px 0;margin:10px 0 14px;}
+.am-desc{font-size:.8rem;color:#334155;line-height:1.6;}
+/* ── GUIA DE VENTAS ── */
+.sales-guide{background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow:hidden;}
+.sg-step{border-bottom:1px solid #f1f5f9;cursor:pointer;transition:background .15s;}
+.sg-step:last-of-type{border-bottom:none;}
+.sg-step:hover{background:#f8fafc;}
+.sg-head{display:flex;align-items:center;gap:10px;padding:12px 16px;}
+.sg-num{width:26px;height:26px;border-radius:50%;font-size:.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;}
+.sg-title{font-size:.8rem;font-weight:700;color:#0f172a;flex:1;}
+.sg-time{font-size:.65rem;color:#94a3b8;flex-shrink:0;}
+.sg-arrow{font-size:.7rem;color:#94a3b8;flex-shrink:0;transition:transform .2s;}
+.sg-step.open .sg-arrow{transform:rotate(90deg);}
+.sg-body{display:none;padding:0 16px 14px 52px;}
+.sg-step.open .sg-body{display:block;}
+.sg-body p{font-size:.78rem;color:#475569;line-height:1.6;margin-bottom:6px;}
+.sg-body ul{padding-left:14px;}
+.sg-body li{font-size:.78rem;color:#475569;line-height:1.8;}
+.sg-body strong{color:#0f172a;font-weight:700;}
+.sg-actions{display:flex;gap:10px;padding:14px 16px;border-top:2px solid #f1f5f9;background:#f8fafc;}
+.sg-btn-prop{flex:1;background:#1d4ed8;color:#fff;border:none;border-radius:8px;padding:11px;font-size:.8rem;font-weight:700;cursor:pointer;}
+.sg-btn-prop:hover{background:#1e40af;}
+.sg-btn-cont{flex:1;background:#0A2540;color:#fff;border:none;border-radius:8px;padding:11px;font-size:.8rem;font-weight:700;cursor:pointer;}
+.sg-btn-cont:hover{background:#0d3060;}
+.prop-form label{font-size:.72rem;font-weight:700;color:#64748b;display:block;margin-bottom:4px;margin-top:12px;}
+.prop-form input,.prop-form select,.prop-form textarea{width:100%;font-size:.82rem;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;outline:none;color:#0f172a;background:#fff;}
+.prop-form input:focus,.prop-form select:focus,.prop-form textarea:focus{border-color:#3B82F6;}
+.prop-form textarea{resize:vertical;min-height:80px;}
+.prop-result{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;font-size:.78rem;line-height:1.7;color:#334155;white-space:pre-wrap;max-height:320px;overflow-y:auto;margin-top:12px;}
+.next-dev{background:#fff;border:2px dashed #cbd5e1;border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:14px;}
+/* ── MODALES ── */
+.moverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;padding:20px;}
+.moverlay.open{display:flex;}
+.modal{background:#fff;border-radius:16px;padding:24px;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal h3{font-size:1rem;font-weight:700;margin-bottom:14px;color:#0f172a;}
+.modal label{font-size:.72rem;font-weight:700;color:#64748b;display:block;margin-bottom:4px;margin-top:12px;}
+.modal input{width:100%;font-size:.82rem;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;outline:none;color:#0f172a;}
+.modal input:focus{border-color:#3B82F6;}
+.color-row{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;}
+.color-dot{width:32px;height:32px;border-radius:8px;cursor:pointer;border:3px solid transparent;transition:transform .15s;}
+.color-dot:hover{transform:scale(1.1);} .color-dot.sel{border-color:#0f172a;}
+.mactions{display:flex;gap:8px;margin-top:18px;}
+.mbtn-save{flex:1;background:#0A2540;color:#fff;border:none;border-radius:8px;padding:10px;font-size:.82rem;font-weight:700;cursor:pointer;}
+.mbtn-save:hover{background:#0d3060;}
+.mbtn-cancel{background:#f1f5f9;color:#64748b;border:none;border-radius:8px;padding:10px 16px;font-size:.82rem;font-weight:600;cursor:pointer;}
+.mbtn-cancel:hover{background:#e2e8f0;}
+.mbtn-del{background:#fee2e2;color:#dc2626;border:none;border-radius:8px;padding:10px 16px;font-size:.82rem;font-weight:600;cursor:pointer;}
+.mbtn-del:hover{background:#fecaca;}
+@media(max-width:900px){.two-col{grid-template-columns:1fr;}.canal-grid{grid-template-columns:repeat(3,1fr);}.hdr{grid-template-columns:1fr;gap:4px;}}
+@media(max-width:500px){.client-grid{grid-template-columns:repeat(2,1fr);}.canal-grid{grid-template-columns:repeat(2,1fr);}}
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel">
-const {useState,useEffect,useRef,useMemo,useCallback}=React;
-
-const PALETTE=['#10B981','#F59E0B','#3B82F6','#8B5CF6','#EF4444','#EC4899','#06B6D4','#84CC16','#F97316','#6366F1','#14B8A6','#A855F7'];
-
-const PRIO_DIAS=[
-  [1,'#EF4444','Lun'],[2,'#F97316','Mar'],[3,'#F59E0B','Mié'],
-  [4,'#22C55E','Jue'],[5,'#3B82F6','Vie'],[6,'#8B5CF6','Sáb'],[7,'#EC4899','Dom']
-];
-
-const INIT_PROJS=[
-  {id:'pal',name:'PAL SRL',color:'#10B981'},
-  {id:'delca',name:'DELCA',color:'#F59E0B'},
-  {id:'iagentes',name:'IAGENTES.TECH',color:'#3B82F6'},
-  {id:'interno',name:'Interno',color:'#8B5CF6'},
-];
-
-const INIT_TASKS=[
-  {id:1,name:'Preguntar a PAL SRL: columna cliente, importe, fecha, estado del Excel',proj:'pal',status:'pending',prio:1,seq:1,notes:'ERP exporta ~6000 filas.',date:'2026-05-12',created:'2026-05-09'},
-  {id:2,name:'Preguntar a PAL SRL: objetivos mensuales por cliente',proj:'pal',status:'pending',prio:1,seq:2,notes:'¿Otro Excel? ¿Fijos o varían?',date:'2026-05-12',created:'2026-05-09'},
-  {id:3,name:'Confirmar funcionalidades web DELCA',proj:'delca',status:'pending',prio:2,seq:3,notes:'¿Muestran precios? ¿Pedidos por WhatsApp o carrito?',date:'2026-05-14',created:'2026-05-09'},
-  {id:4,name:'Verificar si DELCA tiene Excel con productos',proj:'delca',status:'pending',prio:2,seq:4,notes:'El catálogo PDF (88 págs) es todo visual en Canva.',date:'2026-05-14',created:'2026-05-09'},
-  {id:5,name:'Subir index.html actualizado a GitHub — web iagentes.tech',proj:'iagentes',status:'pending',prio:1,seq:5,notes:'Badges: Disponible / Próximamente.',date:'2026-05-09',created:'2026-05-09'},
-  {id:6,name:'Verificar propagación DNS: licitaciones y homologacion',proj:'iagentes',status:'pending',prio:2,seq:6,notes:'Probar licitaciones.iagentes.tech en el navegador.',date:'2026-05-10',created:'2026-05-09'},
-  {id:7,name:'Resolver www.iagentes.tech (rojo en Vercel)',proj:'iagentes',status:'pending',prio:2,seq:7,notes:'CNAME www puede estar propagando.',date:'2026-05-10',created:'2026-05-09'},
-  {id:8,name:'Inscribirse como monotributista',proj:'interno',status:'pending',prio:1,seq:8,notes:'Tramitar antes del primer cobro de cliente.',date:'2026-05-16',created:'2026-05-09'},
-  {id:9,name:'Completar base de conocimiento agentes (tarea programada 21:30)',proj:'iagentes',status:'partial',prio:1,seq:1,notes:'Claude lo hace automáticamente esta noche.',date:'2026-05-25',created:'2026-05-25'},
-  {id:10,name:'Cobrar indemnización e invertir en FCI',proj:'interno',status:'pending',prio:1,seq:2,notes:'Capital de $110M ARS — intocable para gastos.',date:'',created:'2026-05-25'},
-];
-
-const today=()=>new Date().toISOString().slice(0,10);
-const fmt=d=>{if(!d)return null;const[y,m,dd]=d.split('-');return `${dd}/${m}/${y}`;};
-const isOv=d=>d&&d<today();
-const nowt=()=>new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-const isMob=()=>window.innerWidth<=700;
-
-function useLS(k,i){
-  const[v,sv]=useState(()=>{try{const s=localStorage.getItem(k);return s?JSON.parse(s):i;}catch{return i;}});
-  const set=nv=>{const val=typeof nv==='function'?nv(v):nv;sv(val);try{localStorage.setItem(k,JSON.stringify(val));}catch{}};
-  return[v,set];
-}
-
-/* ── SUPABASE SYNC ── */
-const SB_URL='https://hvvqkysuquzjpmwcrzkv.supabase.co';
-const SB_KEY='sb_publishable_C-6iZqmsAxwsa9fnE_Hx-w_dHLzJNDe';
-let _sb=null;
-const getSB=()=>{if(!_sb&&window.supabase)_sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});return _sb;};
-
-function useSupaTable(lsKey,supaTable,init){
-  const[v,sv]=useState(()=>{try{const s=localStorage.getItem(lsKey);return s?JSON.parse(s):init;}catch{return init;}});
-  const ref=useRef(v);
-  const setV=useCallback(nv=>{
-    const prev=ref.current;
-    const next=typeof nv==='function'?nv(prev):nv;
-    ref.current=next;sv(next);
-    try{localStorage.setItem(lsKey,JSON.stringify(next));}catch{}
-    const sb=getSB();if(!sb)return;
-    (async()=>{
-      if(next.length)await sb.from(supaTable).upsert(next);
-      const ids=new Set(next.map(x=>String(x.id)));
-      for(const d of prev.filter(x=>!ids.has(String(x.id))))
-        await sb.from(supaTable).delete().eq('id',d.id);
-    })().catch(e=>console.warn('SB sync:',e));
-  },[lsKey,supaTable]);
-  useEffect(()=>{
-    const load=async()=>{
-      const sb=getSB();if(!sb)return;
-      const{data,error}=await sb.from(supaTable).select('*');
-      if(!error&&data){
-        if(data.length>0){
-          ref.current=data;sv(data);
-          try{localStorage.setItem(lsKey,JSON.stringify(data));}catch{}
-        } else if(ref.current.length>0){
-          try{await sb.from(supaTable).upsert(ref.current);}catch(e){console.warn('SB init push:',e);}
-        }
-      }
-    };
-    load();
-    const t=setInterval(load,15000);
-    return()=>clearInterval(t);
-  },[lsKey,supaTable]);
-  return[v,setV];
-}
-
-const SVG={
-  plus:<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>,
-  x:<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>,
-  send:<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>,
-  check:<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/>,
-  trash:<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>,
-  edit:<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>,
-  list:<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16"/>,
-  ai:<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>,
-  folder:<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>,
-  key:<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>,
-  chart:<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>,
-  up:<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>,
-  down:<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>,
+<div class="hdr">
+  <div class="logo-wrap">
+    <div class="logo-text"><span class="li">i</span><span class="la">AGENTES</span><span class="lt">.TECH</span></div>
+    <span class="logo-tag">CENTRO DE OPERACIONES</span>
+  </div>
+  <div class="hdr-center" id="fecha"></div>
+  <div class="hdr-right"></div>
+</div>
+<div class="main">
+  <div class="two-col" style="margin-top:14px;">
+    <div>
+      <div class="stitle">Estado de clientes <span class="stitle-sub">(clic para editar)</span></div>
+      <div class="client-grid" id="clientGrid"></div>
+      <button class="add-client-btn" onclick="addClientTile()">+ Agregar cliente</button>
+    </div>
+    <div>
+      <div class="stitle">Tareas prioritarias <span class="stitle-sub" style="margin-left:auto;"><button id="mdImportBtn" style="background:none;border:1px solid #e2e8f0;border-radius:4px;padding:2px 8px;font-size:.6rem;color:#64748b;cursor:pointer;font-weight:600;">Importar .md</button><input type="file" id="mdFileInput" accept=".md,.txt" style="display:none;"></span></div>
+      <div class="tasks-panel">
+        <div class="tasks-tabs">
+          <button class="ttab tp1 on" data-tab="p1">P1 · Hacer ya <span id="cnt-p1"></span></button>
+          <button class="ttab tp2"    data-tab="p2">P2 · Esta semana <span id="cnt-p2"></span></button>
+          <button class="ttab tp3"    data-tab="p3">P3 · Mas adelante <span id="cnt-p3"></span></button>
+        </div>
+        <div class="tasks-body">
+          <div class="tgroup on" id="grp-p1"></div>
+          <div class="tgroup"    id="grp-p2"></div>
+          <div class="tgroup"    id="grp-p3"></div>
+        </div>
+        <div class="tasks-add">
+          <input type="text" id="newTaskInp" placeholder="Nueva tarea en el grupo activo...">
+          <button id="addTaskBtn">+ Agregar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="stitle">Ingresos proyectados por mes <span class="stitle-sub">(doble clic en valor para editar · doble clic en nombre para editar o eliminar · en $ARS)</span></div>
+  <div class="cf-wrap">
+    <table class="cf-table" id="cfTable"></table>
+    <div class="cf-actions">
+      <button class="cf-add-row" id="cfAddRow">+ Agregar cliente</button>
+      <span style="font-size:.65rem;color:#94a3b8;margin-left:4px;">Los totales se calculan solos.</span>
+    </div>
+  </div>
+  <div class="stitle">Portfolio de agentes <span class="stitle-sub">(clic para ver descripcion y pitch de venta)</span></div>
+  <div class="agent-grid" id="agentGrid"></div>
+  <div class="stitle" style="margin-top:24px;">Guia de ventas <span class="stitle-sub">(expandi cada paso)</span></div>
+  <div class="sales-guide" id="salesGuide">
+    <div class="sg-step" onclick="toggleStep(this)">
+      <div class="sg-head"><span class="sg-num" style="background:#3B82F6;">1</span><span class="sg-title">Primer contacto — concertar la reunion</span><span class="sg-time">5 min</span><span class="sg-arrow">&#9658;</span></div>
+      <div class="sg-body">
+        <p><strong>Objetivo:</strong> agendar una reunion de 45 minutos. No vender todavia — solo escuchar.</p>
+        <p><strong>Que decir:</strong> "Trabajo con empresas que tienen procesos de compras, calidad o logistica que todavia se manejan con Excel o WhatsApp. Lo que hago es redisenar ese proceso y automatizarlo con IA. Te propongo una reunion de 45 minutos para ver si hay algo que pueda servirte. Sin costo."</p>
+        <ul>
+          <li>Confirmar nombre, cargo y empresa</li>
+          <li>Acordar fecha, hora y modalidad (presencial / videollamada)</li>
+          <li>Enviar invitacion de calendario con descripcion breve</li>
+        </ul>
+      </div>
+    </div>
+    <div class="sg-step" onclick="toggleStep(this)">
+      <div class="sg-head"><span class="sg-num" style="background:#0A2540;">2</span><span class="sg-title">Reunion de Discovery — preguntas clave</span><span class="sg-time">45 min</span><span class="sg-arrow">&#9658;</span></div>
+      <div class="sg-body">
+        <p><strong>No presentar todavia.</strong> Esta reunion es para escuchar.</p>
+        <ul>
+          <li>Cuales son los 3 procesos que mas tiempo te consumen en la semana?</li>
+          <li>Hay tareas que hacas manualmente y que se repiten siempre igual?</li>
+          <li>Donde perdas mas tiempo: buscando informacion, esperando respuestas o cargando datos?</li>
+          <li>Usas Excel para algo que deberia estar automatizado?</li>
+          <li>Que pasaria si pudieras eliminar esa tarea completamente?</li>
+          <li>Cuantas personas hacen ese proceso? Con que frecuencia?</li>
+        </ul>
+        <p><strong>Al final:</strong> "Con lo que me contaste, veo al menos 2 o 3 oportunidades concretas. Te armo una propuesta y te la mando en 48 horas."</p>
+      </div>
+    </div>
+    <div class="sg-step" onclick="toggleStep(this)">
+      <div class="sg-head"><span class="sg-num" style="background:#15803d;">3</span><span class="sg-title">Propuesta comercial — armar y enviar</span><span class="sg-time">48 hs post-reunion</span><span class="sg-arrow">&#9658;</span></div>
+      <div class="sg-body">
+        <p><strong>La propuesta responde exactamente lo que el cliente dijo que le duele.</strong></p>
+        <ul>
+          <li>Resumir el dolor principal del cliente (en sus propias palabras)</li>
+          <li>Proponer 1 o 2 agentes especificos que resuelven ese dolor</li>
+          <li>Mostrar que pasa antes y despues de implementar el agente</li>
+          <li>Incluir plan Esencial, Profesional o Avanzado segun el caso</li>
+          <li>Precio claro con fee mensual de mantenimiento</li>
+          <li>Fecha de vencimiento de la propuesta: 7 dias</li>
+        </ul>
+      </div>
+    </div>
+    <div class="sg-step" onclick="toggleStep(this)">
+      <div class="sg-head"><span class="sg-num" style="background:#ca8a04;">4</span><span class="sg-title">Seguimiento — si no responde en 48 hs</span><span class="sg-time">2 dias post-propuesta</span><span class="sg-arrow">&#9658;</span></div>
+      <div class="sg-body">
+        <p><strong>Un solo seguimiento activo. No insistir mas de 2 veces.</strong></p>
+        <p>"Hola [Nombre], te escribo para ver si tuviste oportunidad de revisar la propuesta. Cualquier pregunta o ajuste, avisame. Si el momento no es el indicado, tambien esta bien saberlo."</p>
+      </div>
+    </div>
+    <div class="sg-step" onclick="toggleStep(this)">
+      <div class="sg-head"><span class="sg-num" style="background:#dc2626;">5</span><span class="sg-title">Cierre — propuesta aprobada, generar contrato</span><span class="sg-time">Mismo dia de la aprobacion</span><span class="sg-arrow">&#9658;</span></div>
+      <div class="sg-body">
+        <p><strong>Cuando el cliente dice "si", el contrato se firma el mismo dia.</strong></p>
+        <ul>
+          <li>Confirmar razon social y CUIT del cliente</li>
+          <li>Confirmar el plan acordado</li>
+          <li>Generar contrato con el boton de abajo</li>
+          <li>Una vez firmado: registrar en Registro_Contratos.xlsx</li>
+        </ul>
+      </div>
+    </div>
+    <div class="sg-actions">
+      <button class="sg-btn-prop" onclick="openPropModal()">Generar propuesta comercial</button>
+      <button class="sg-btn-cont" onclick="openContModal()">Generar contrato</button>
+    </div>
+  </div>
+  <div class="stitle">Canal de prospectos (Pipeline)</div>
+  <div class="canal-grid">
+    <div class="canal-tile"><div class="canal-count">5</div><div class="canal-pct">33%</div><div class="canal-label">Email pendiente</div></div>
+    <div class="canal-tile"><div class="canal-count">10</div><div class="canal-pct">67%</div><div class="canal-label">Emails enviados</div></div>
+    <div class="canal-tile"><div class="canal-count">3</div><div class="canal-pct">20%</div><div class="canal-label">Industrial / Manufactura</div></div>
+    <div class="canal-tile"><div class="canal-count">2</div><div class="canal-pct">13%</div><div class="canal-label">Servicios / Salud</div></div>
+    <div class="canal-tile"><div class="canal-count">2</div><div class="canal-pct">13%</div><div class="canal-label">Juridico / Contable</div></div>
+    <div class="canal-tile" style="border-top-color:#dc2626;"><div class="canal-count" style="color:#dc2626;">0</div><div class="canal-pct" style="color:#dc2626;">0%</div><div class="canal-label">Respuestas recibidas</div></div>
+  </div>
+  <div class="stitle">Agenda personal y recordatorios <span class="stitle-sub">(P = cambiar prioridad · clic en check = cumplida, desaparece)</span></div>
+  <div class="pers-grid" id="persGrid"></div>
+  <div class="pers-add">
+    <button class="mic-btn" id="micBtn" title="Dictar tarea con voz">&#127908;</button>
+    <input type="text" id="newPersInp" placeholder="Escribi o dicta una tarea personal...">
+    <button id="addPersBtn">+ Agregar</button>
+  </div>
+  <div id="micStatus" style="font-size:.65rem;color:#94a3b8;margin-top:5px;display:none;"></div>
+  <div class="stitle">Proximo desarrollo en agenda</div>
+  <div class="next-dev">
+    <div style="font-size:1.4rem;">&#9881;</div>
+    <div>
+      <div style="font-size:.85rem;font-weight:700;color:#0f172a;">Centro de Operaciones v6 — Carga automatica desde archivo de tareas</div>
+      <div style="font-size:.72rem;color:#94a3b8;margin-top:2px;">Leer TAREAS_PENDIENTES.md y mostrar las tareas automaticamente</div>
+    </div>
+  </div>
+</div>
+<!-- MODAL AGENTE -->
+<div class="moverlay" id="agentModal">
+  <div class="modal" style="max-width:520px;">
+    <h3 id="am-name"></h3>
+    <div id="am-status" class="am-statusbadge"></div>
+    <div id="am-pitch" class="am-pitch"></div>
+    <div id="am-desc" class="am-desc"></div>
+    <div class="mactions" style="margin-top:16px;">
+      <button class="mbtn-cancel" onclick="closeModal('agentModal')">Cerrar</button>
+    </div>
+  </div>
+</div>
+<!-- MODAL PROPUESTA -->
+<div class="moverlay" id="propModal">
+  <div class="modal" style="max-width:560px;max-height:90vh;overflow-y:auto;">
+    <h3>Generar propuesta comercial</h3>
+    <div id="propFormWrap">
+      <div class="prop-form">
+        <label>Nombre del cliente / empresa</label>
+        <input type="text" id="p-empresa" placeholder="Ej: Metalurgica del Norte SA">
+        <label>Nombre y cargo de quien recibe la propuesta</label>
+        <input type="text" id="p-contacto" placeholder="Ej: Carlos Gomez, Gerente de Compras">
+        <label>Dolor principal identificado en la reunion</label>
+        <textarea id="p-dolor" placeholder="Ej: Comparan cotizaciones manualmente en Excel, les lleva 3 horas por licitacion"></textarea>
+        <label>Agente(s) propuesto(s)</label>
+        <input type="text" id="p-agente-custom" placeholder="Ej: Portal de Licitaciones, Comparador de Cotizaciones...">
+        <label>Importe de implementacion / setup ($ARS)</label>
+        <input type="text" id="p-setup" placeholder="Ej: 1200000">
+        <label>Fee mensual acordado ($ARS)</label>
+        <input type="text" id="p-fee" placeholder="Ej: 350000">
+      </div>
+      <div class="mactions">
+        <button class="mbtn-save" onclick="generarPropuesta()">Generar propuesta</button>
+        <button class="mbtn-cancel" onclick="closeModal('propModal')">Cancelar</button>
+      </div>
+    </div>
+    <div id="propResultWrap" style="display:none;">
+      <div class="prop-result" id="propResult"></div>
+      <div class="mactions" style="margin-top:10px;flex-wrap:wrap;gap:6px;">
+        <button class="mbtn-save" onclick="descargarPropuestaPDF()" style="background:#15803d;">Descargar PDF</button>
+        <button class="mbtn-save" onclick="copyPropuesta()">Copiar texto</button>
+        <button class="mbtn-cancel" onclick="document.getElementById('propResultWrap').style.display='none';document.getElementById('propFormWrap').style.display='block';">Editar</button>
+        <button class="mbtn-cancel" onclick="closeModal('propModal')">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- MODAL CONTRATO -->
+<div class="moverlay" id="contModal">
+  <div class="modal" style="max-width:560px;max-height:90vh;overflow-y:auto;">
+    <h3>Generar contrato de servicios — PDF</h3>
+    <div class="prop-form">
+      <label>Razon social del cliente</label>
+      <input type="text" id="c-razon" placeholder="Ej: Metalurgica del Norte S.A.">
+      <label>CUIT del cliente</label>
+      <input type="text" id="c-cuit" placeholder="Ej: 30-12345678-9">
+      <label>Representante del cliente</label>
+      <input type="text" id="c-rep" placeholder="Ej: Juan Perez, Gerente General">
+      <label>Email del cliente</label>
+      <input type="text" id="c-email" placeholder="Ej: contacto@empresa.com">
+      <label>Agente(s) a implementar</label>
+      <input type="text" id="c-agente" placeholder="Ej: Portal de Licitaciones">
+      <label>Plan</label>
+      <select id="c-plan" style="width:100%;font-size:.82rem;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;outline:none;color:#0f172a;background:#fff;">
+        <option value="Esencial">Esencial</option>
+        <option value="Profesional">Profesional</option>
+        <option value="Avanzado">Avanzado</option>
+      </select>
+      <label>Importe de implementacion / setup ($ARS)</label>
+      <input type="text" id="c-setup" placeholder="Ej: 1200000">
+      <label>Fee mensual ($ARS)</label>
+      <input type="text" id="c-fee" placeholder="Ej: 350000">
+      <label>Forma de pago</label>
+      <input type="text" id="c-pago" placeholder="Ej: Transferencia bancaria, 50% al inicio y 50% al finalizar">
+      <label>Fecha de inicio</label>
+      <input type="date" id="c-fecha">
+      <label>Ciudad</label>
+      <input type="text" id="c-ciudad" value="Buenos Aires">
+    </div>
+    <div class="mactions" style="margin-top:16px;">
+      <button class="mbtn-save" onclick="descargarContratoPDF()" style="background:#15803d;">Generar contrato PDF</button>
+      <button class="mbtn-cancel" onclick="closeModal('contModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+<!-- MODAL CLIENTE -->
+<div class="moverlay" id="clientModal">
+  <div class="modal">
+    <h3>Editar cliente</h3>
+    <label>Nombre</label><input type="text" id="cName">
+    <label>Estado</label><input type="text" id="cStatus">
+    <label>Etiqueta</label><input type="text" id="cBadge">
+    <label>Color</label>
+    <div class="color-row" id="cColorRow">
+      <div class="color-dot sel" data-c="tc-green"  style="background:#15803d;"></div>
+      <div class="color-dot"    data-c="tc-yellow" style="background:#fde047;"></div>
+      <div class="color-dot"    data-c="tc-red"    style="background:#dc2626;"></div>
+      <div class="color-dot"    data-c="tc-orange" style="background:#ea580c;"></div>
+      <div class="color-dot"    data-c="tc-blue"   style="background:#1d4ed8;"></div>
+      <div class="color-dot"    data-c="tc-gray"   style="background:#94a3b8;"></div>
+    </div>
+    <div class="mactions">
+      <button class="mbtn-save" id="cSaveBtn">Guardar</button>
+      <button class="mbtn-del"  id="cDelBtn">Eliminar</button>
+      <button class="mbtn-cancel" onclick="closeModal('clientModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+<script>
+// ── FIREBASE ─────────────────────────────────────────────
+const firebaseConfig={
+  apiKey:"AIzaSyDqcNvN66iUULJ9yvzbF8RFTfYo20aOunE",
+  authDomain:"iagentes-panel.firebaseapp.com",
+  databaseURL:"https://iagentes-panel-default-rtdb.firebaseio.com",
+  projectId:"iagentes-panel",
+  storageBucket:"iagentes-panel.firebasestorage.app",
+  messagingSenderId:"545869812332",
+  appId:"1:545869812332:web:7b0d34f4222e17d2607e49"
 };
-const Ic=({n,s=16,c})=><svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c||'currentColor'}>{SVG[n]}</svg>;
-
-/* ── SWIPE ROW (mobile) ── */
-function SwipeRow({children,onEdit,onDel}){
-  const[off,setOff]=useState(0);
-  const sx=useRef(null);
-  const MAX=120;
-  const ts=e=>{sx.current=e.touches[0].clientX;};
-  const tm=e=>{if(sx.current===null)return;const dx=e.touches[0].clientX-sx.current;if(dx<0)setOff(Math.max(-MAX,dx));};
-  const te=()=>{setOff(v=>v<-MAX*.5?-MAX:0);sx.current=null;};
-  return <div className="trow-wrap">
-    <div className="swipe-actions" style={{width:MAX}}>
-      <button className="swipe-btn sw-edit" onClick={()=>{setOff(0);onEdit();}}>✏️</button>
-      <button className="swipe-btn sw-del" onClick={()=>{setOff(0);onDel();}}>🗑</button>
-    </div>
-    <div style={{transform:`translateX(${off}px)`,transition:sx.current?'none':'transform .25s'}}
-      onTouchStart={ts} onTouchMove={tm} onTouchEnd={te}>{children}</div>
-  </div>;
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+const panelRef=db.ref('panel');
+// ── UTILIDADES ──────────────────────────────────────────
+function sto(k,v){
+  try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}
+  panelRef.child(k).set(v).catch(()=>{});
 }
-
-/* ── INLINE NAME EDIT ── */
-function NameField({task,onSave,done}){
-  const[ed,setEd]=useState(false);
-  const[val,setVal]=useState(task.name);
-  const ref=useRef(null);
-  useEffect(()=>{if(ed)ref.current?.focus();},[ed]);
-  const commit=()=>{const v=val.trim();if(v&&v!==task.name)onSave(v);setEd(false);};
-  if(ed)return <input ref={ref} className="inline-inp" value={val}
-    onChange={e=>setVal(e.target.value)}
-    onBlur={commit}
-    onKeyDown={e=>{if(e.key==='Enter')commit();if(e.key==='Escape'){setVal(task.name);setEd(false);}}}
-    onClick={e=>e.stopPropagation()}/>;
-  return <div className={`trow-name${done?' done':''} editable`}
-    onDoubleClick={()=>{if(!isMob())setEd(true);}}
-    title={isMob()?'':task.name+' (doble clic para editar)'}>{task.name}</div>;
+function gto(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmt(n){return Number(n).toLocaleString('es-AR');}
+// ── FECHA ───────────────────────────────────────────────
+const DIAS=['Domingo','Lunes','Martes','Miercoles','Jueves','Viernes','Sabado'];
+const MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const N=new Date();
+document.getElementById('fecha').textContent=DIAS[N.getDay()]+', '+N.getDate()+' de '+MES[N.getMonth()]+' de '+N.getFullYear();
+// ── DATOS INICIALES ─────────────────────────────────────
+const D_CLIENTS=[
+  {name:'PAL SRL',        status:'Panel Compras activo',         badge:'Produccion', color:'tc-green' },
+  {name:'Dra. Ojeda',     status:'Inicio Julio 2026',            badge:'Por arrancar',color:'tc-yellow'},
+  {name:'San Cayetano',   status:'Propuesta sin confirmar',       badge:'Esperando',  color:'tc-red'   },
+  {name:'DELCA',          status:'Esperando datos del cliente',   badge:'Bloqueado',  color:'tc-red'   },
+  {name:'Secretos Dulces',status:'Propuesta sin confirmar',       badge:'Esperando',  color:'tc-red'   },
+  {name:'GrupoPatagonico',status:'Contrato sin firmar',           badge:'Pendiente',  color:'tc-yellow'},
+  {name:'Marchetti',      status:'Contrato sin firmar',           badge:'Pendiente',  color:'tc-orange'},
+  {name:'Met. del Norte', status:'Contrato firmado',              badge:'Activo',     color:'tc-gray'  },
+  {name:'+ Proximo',      status:'5 prospectos en canal',         badge:'Pipeline',   color:'tc-blue'  },
+];
+const D_TASKS=[
+  {text:'Actualizar CLAUDE.md — tabla de clientes activos',        meta:'A1 · Faltan San Cayetano, DELCA, Secretos Dulces',              p:'p1',n:1, done:false},
+  {text:'Crear carpeta Google Drive IAGENTES.TECH',                meta:'I5 · Subcarpetas por agente: docs, flujos, demos',             p:'p1',n:2, done:false},
+  {text:'Portal de Licitaciones — datos reales para demo',         meta:'T6 · Producto estrella — requiere ejemplos creibles',          p:'p1',n:3, done:false},
+  {text:'Crear perfil LinkedIn como Fundador IAGENTES.TECH',       meta:'P5 · Sin perfil activo actualmente',                           p:'p1',n:4, done:false},
+  {text:'Desarrollar SaaS generico de gestion juridica',           meta:'O1 · Primero producto generico, despues adaptar para Ojeda',   p:'p2',n:1, done:false},
+  {text:'Notas de voz en Centro de Operaciones',                   meta:'T2 · Commit seguro de partida: 415960c (29/05)',               p:'p2',n:2, done:false},
+  {text:'Inventario y migracion ~40 agentes Relevance AI',         meta:'T3 · Descartar obsoletos antes de migrar',                    p:'p2',n:3, done:false},
+  {text:'Completar arquitectura Sistema de Ventas',                meta:'V1 · Cowork + Excel + Hunter/Apollo + Gmail',                  p:'p2',n:4, done:false},
+  {text:'Orden de presentacion para reunion julio — Dra. Ojeda',  meta:'O3 · Definir los 3 agentes de mayor impacto del PMV',         p:'p2',n:5, done:false},
+  {text:'Portal Homologacion — datos reales + manual',            meta:'T5/T7 · Se encaran juntos',                                    p:'p2',n:6, done:false},
+  {text:'Flowcharts Licitaciones y Homologacion',                  meta:'T8 · Documentacion de venta',                                 p:'p2',n:7, done:false},
+  {text:'Comparador de Cotizaciones v2 — integracion Excel + email',meta:'T9 · Ver roadmap en contexto-andres-MASTER.md §8',          p:'p2',n:8, done:false},
+  {text:'Completar CUIT Dra. Ojeda en datos-estudio, skill y panel',meta:'O2 · Email registrado. Solo falta el CUIT',                 p:'p3',n:1, done:false},
+  {text:'Portal web definitivo estudio Dra. Ojeda (dominio propio)',meta:'O14 · Fase 3 — post-inicio con cliente',                    p:'p3',n:2, done:false},
+  {text:'Confirmar propuesta Clinica San Cayetano',                meta:'C3 · Definir si avanzamos con Turnos + PAMI',                 p:'p3',n:3, done:false},
+  {text:'Confirmar datos DELCA para web + agente marketing',       meta:'D3 · Sin features del sitio y lista de precios no hay avance',p:'p3',n:4, done:false},
+  {text:'Confirmar propuesta Secretos Dulces — DulceVoz',         meta:'S2 · Propuesta presentada, esperando respuesta',              p:'p3',n:5, done:false},
+  {text:'PAL SRL — columnas ERP + objetivos + carpeta Drive',     meta:'PAL1/2/3 · Esperando confirmacion de PAL',                    p:'p3',n:6, done:false},
+  {text:'Tramitar seguro de desempleo',                            meta:'P1 · Tramite personal — post-EG Impresores',                  p:'p3',n:7, done:false},
+  {text:'Cobrar indemnizacion e invertir en FCI o plazo fijo',    meta:'P2 · Capital intocable — solo usar intereses',                p:'p3',n:8, done:false},
+  {text:'Migrar cuenta Claude a nuevo Gmail Pro',                  meta:'P3 · Crear nueva cuenta Gmail primero',                       p:'p3',n:9, done:false},
+  {text:'Actualizar CV',                                           meta:'P6 · Pendiente',                                              p:'p3',n:10,done:false},
+  {text:'Reclamos de Calidad — modulo Registro de Documentos',    meta:'T4 · Flujo base ya definido',                                 p:'p3',n:11,done:false},
+  {text:'Dashboard de prospeccion: rubro + zona + programador',   meta:'V2 · Evaluar Apollo vs Hunter',                               p:'p3',n:12,done:false},
+  {text:'Documentar sistema de ventas en carpeta IAGENTES_TECH',  meta:'V3 · Carpeta creada, pendiente de contenido',                 p:'p3',n:13,done:false},
+];
+const D_CF={
+  months:['Jun 2026','Jul 2026','Ago 2026','Sep 2026'],
+  rows:[
+    {client:'PAL SRL',         vals:[0,0,0,0]},
+    {client:'Dra. Ojeda',      vals:[0,0,0,0]},
+    {client:'San Cayetano',    vals:[0,0,0,0]},
+    {client:'DELCA',           vals:[0,0,0,0]},
+    {client:'Secretos Dulces', vals:[0,0,0,0]},
+    {client:'GrupoPatagonico', vals:[0,0,0,0]},
+    {client:'Marchetti',       vals:[0,0,0,0]},
+    {client:'Met. del Norte',  vals:[0,0,0,0]},
+  ]
+};
+const D_PERS=[
+  {text:'Tramitar seguro de desempleo',    p:'p1'},
+  {text:'Cobrar indemnizacion e invertir', p:'p1'},
+  {text:'Actualizar perfil LinkedIn',      p:'p2'},
+];
+let clients  = gto('v5_clients', D_CLIENTS);
+let tasks    = gto('v6_tasks',   D_TASKS);
+let cf       = gto('v5_cf',      D_CF);
+let personal = gto('v5_pers',    D_PERS);
+// ── AGENTES ─────────────────────────────────────────────
+const AGENTS=[
+  {name:'Comparador de Cotizaciones',badge:'Demo listo',color:'at-blue',
+   statusColor:'#1d4ed8',status:'Disponible para venta',
+   pitch:'Cuanto tiempo perdas comparando presupuestos a mano? Este agente lo hace en segundos.',
+   desc:'Compara cotizaciones de hasta 5 proveedores automaticamente. Indica la mejor opcion, calcula el ahorro potencial y sugiere una estrategia de negociacion.'},
+  {name:'Portal de Licitaciones',badge:'Producto estrella',color:'at-star',
+   statusColor:'#0A2540',status:'Disponible para venta',
+   pitch:'Los proveedores cargan sus precios en el portal. El agente compara, evalua contra la inflacion y recomienda a quien comprarle.',
+   desc:'Portal web donde los proveedores cargan sus precios por invitacion. El agente compara automaticamente, evalua la variacion respecto al periodo anterior y exporta el analisis a Excel con recomendacion incluida.'},
+  {name:'Panel de Compras Intles',badge:'En produccion',color:'at-green',
+   statusColor:'#15803d',status:'Productivo en PAL SRL',
+   pitch:'Visibilidad total de todas las importaciones en tiempo real. Sin Excel, sin WhatsApp.',
+   desc:'Gestiona importaciones en tiempo real con 10 etapas de proceso configurables, historial automatico con fecha y hora, borradores de email generados por IA y alertas de demoras. Primer cliente: PAL SRL (Mayo 2026).'},
+  {name:'Agente de Vencimientos',badge:'En produccion',color:'at-green',
+   statusColor:'#15803d',status:'Productivo — activo',
+   pitch:'Nunca mas perderse un vencimiento de contrato, garantia o plazo legal.',
+   desc:'Monitorea vencimientos con semaforo de 4 colores. Envia alertas automaticas por correo con anticipacion configurable. Adaptable a plazos legales y vencimientos de garantias.'},
+  {name:'Buscador Visual de Piezas',badge:'Demo listo',color:'at-blue',
+   statusColor:'#1d4ed8',status:'Disponible para venta',
+   pitch:'No sabes como se llama la pieza? Sacase una foto y el agente la identifica y busca proveedores.',
+   desc:'El operario saca una foto de la pieza con el celular. El agente identifica que es, busca el nombre tecnico y encuentra proveedores en la zona.'},
+  {name:'Agente de Reclamos de Calidad',badge:'En desarrollo',color:'at-orange',
+   statusColor:'#ea580c',status:'En desarrollo',
+   pitch:'Cada reclamo a proveedor registrado, seguido y cerrado. Sin que nada se pierda.',
+   desc:'Gestiona reclamos a proveedores por calidad de insumos. Registra el reclamo con evidencia, prioriza segun impacto en produccion y hace seguimiento automatico.'},
+  {name:'Tracker de Homologacion',badge:'Demo listo',color:'at-blue',
+   statusColor:'#1d4ed8',status:'Disponible para venta',
+   pitch:'El proceso de homologacion de proveedores organizado en un solo lugar.',
+   desc:'Seguimiento del proceso de homologacion de proveedores. Etapas definidas, documentacion requerida, estados de avance y recordatorios automaticos.'},
+  {name:'Seguimiento Comercial',badge:'Documentado',color:'at-gray',
+   statusColor:'#64748b',status:'En base de conocimiento',
+   pitch:'Pipeline de ventas con seguimiento automatico. Nunca mas perder un prospecto.',
+   desc:'Gestiona el pipeline de ventas. Registra oportunidades, hace seguimiento automatico por email, alerta cuando una oportunidad lleva mas de X dias sin movimiento.'},
+  {name:'Dashboard de Compras',badge:'Documentado',color:'at-gray',
+   statusColor:'#64748b',status:'En base de conocimiento',
+   pitch:'Todos los indicadores del area de compras en un solo panel.',
+   desc:'Panel de indicadores: spend analytics por proveedor y categoria, performance de proveedores, tendencias de precios e inflacion, alertas de desvio presupuestario.'},
+  {name:'Agente de RRHH',badge:'Documentado',color:'at-gray',
+   statusColor:'#64748b',status:'En base de conocimiento',
+   pitch:'Onboarding, legajos y novedades de RRHH automatizados.',
+   desc:'Automatiza procesos de Recursos Humanos: onboarding, gestion de legajos digitales, carga de novedades para liquidacion de sueldos y recordatorios de vencimientos.'},
+  {name:'Agente de Administracion',badge:'Documentado',color:'at-gray',
+   statusColor:'#64748b',status:'En base de conocimiento',
+   pitch:'Facturas, pagos y reportes administrativos sin intervencion manual.',
+   desc:'Automatiza procesos administrativos: recepcion y carga de facturas, seguimiento de pagos, generacion de reportes periodicos y conciliaciones.'},
+];
+function renderAgents(){
+  const g=document.getElementById('agentGrid');g.innerHTML='';
+  AGENTS.forEach((a,i)=>{
+    const div=document.createElement('div');
+    div.className='atile '+a.color;
+    div.innerHTML=`<div class="atile-name">${esc(a.name)}</div><div class="atile-badge">${a.badge}</div>`;
+    div.onclick=()=>openAgentModal(i);
+    g.appendChild(div);
+  });
 }
-
-/* ── TASK ROW ── */
-function TaskRow({task,projs,onEdit,onDel,onSt,onDragStart,onDragOver,onDrop,onInline}){
-  const p=projs.find(x=>x.id===task.proj)||{name:task.proj||'—',color:'#94A3B8'};
-  const over=isOv(task.date)&&task.status!=='done';
-  const done=task.status==='done';
-  const row=<div
-    className={`trow ${done?'st-done':'prio-'+task.prio}`}
-    draggable={!isMob()}
-    onDragStart={()=>onDragStart(task.id)}
-    onDragOver={e=>{e.preventDefault();onDragOver(task.id);}}
-    onDrop={e=>{e.preventDefault();onDrop(task.id);}}
-    onDragEnd={()=>onDrop(null)}>
-    <div className="drag-handle">⠿</div>
-    <div className="seq-num" title="Posición">{task.seq||'—'}</div>
-    <div className="trow-body">
-      <div className="trow-top">
-        <span className="badge-proj" style={{background:p.color+'20',color:p.color}}>{p.name}</span>
-        <span className={`badge-prio p${task.prio}`}>{(()=>{const d=PRIO_DIAS.find(x=>x[0]===task.prio);return d?`P${d[0]} ${d[2]}`:`P${task.prio}`;})()}</span>
-        {over&&<span className="badge-ov">⚠ Vencida</span>}
-        {task.date&&<span className={`badge-date${over?' ov':''}`}>📅 {fmt(task.date)}</span>}
-      </div>
-      <NameField task={task} done={done} onSave={name=>onInline(task.id,name)}/>
-      {task.notes&&<div className="trow-note">{task.notes.length>120?task.notes.slice(0,120)+'…':task.notes}</div>}
-    </div>
-    <div className="trow-right">
-      <div className="st-btns" onClick={e=>e.stopPropagation()}>
-        <button className={`st-btn s-pending${task.status==='pending'?' active':''}`} onClick={()=>onSt(task.id,'pending')}>🔴 Pendiente</button>
-        <button className={`st-btn s-partial${task.status==='partial'?' active':''}`} onClick={()=>onSt(task.id,'partial')}>🟡 En curso</button>
-        <button className={`st-btn s-done${task.status==='done'?' active':''}`} onClick={()=>onSt(task.id,'done')}>✅ Cumplida</button>
-      </div>
-      <div className="act-btns" onClick={e=>e.stopPropagation()}>
-        <button className="act-btn" onClick={()=>onEdit(task)}><Ic n="edit" s={13}/></button>
-        <button className="act-btn del" onClick={()=>onDel(task.id)}><Ic n="trash" s={13}/></button>
-      </div>
-    </div>
-  </div>;
-  if(isMob())return <SwipeRow onEdit={()=>onEdit(task)} onDel={()=>onDel(task.id)}>{row}</SwipeRow>;
-  return row;
+function openAgentModal(i){
+  const a=AGENTS[i];
+  document.getElementById('am-name').textContent=a.name;
+  const st=document.getElementById('am-status');
+  st.textContent=a.status;st.style.background=a.statusColor;
+  document.getElementById('am-pitch').textContent=a.pitch;
+  document.getElementById('am-desc').textContent=a.desc;
+  document.getElementById('agentModal').classList.add('open');
 }
-
-/* ── AI PANEL CONTENT (shared desktop + mobile) ── */
-function AIContent({tasks,projs,setTasks,apiKey,onOpenKey}){
-  const[msgs,setMsgs]=useState([{r:'ai',t:'Hola Andrés 👋 Podés pedirme que cree tareas, que muestre las urgentes o que consulte el estado de un proyecto.',ts:nowt()}]);
-  const[inp,setInp]=useState('');
-  const[loading,setLoading]=useState(false);
-  const endRef=useRef(null);
-  useEffect(()=>{endRef.current?.scrollIntoView({behavior:'smooth'});},[msgs,loading]);
-
-  const send=async(txt)=>{
-    const q=(txt||inp).trim();if(!q||loading)return;
-    setInp('');setMsgs(m=>[...m,{r:'user',t:q,ts:nowt()}]);setLoading(true);
-    if(!apiKey){
-      setMsgs(m=>[...m,{r:'ai',t:'Necesito una API Key de Anthropic para funcionar. Configurala con el botón ⚙️ en el encabezado.',ts:nowt()}]);
-      setLoading(false);return;
-    }
-    try{
-      const pNames=projs.map(p=>p.id+'='+p.name).join(', ');
-      const sum=tasks.slice(-20).map(x=>`[${x.status}][P${x.prio}] ${x.name} (${x.proj}${x.date?', '+fmt(x.date):''} )`).join('\n');
-      const sys=`Sos el asistente de IAGENTES.TECH de Andrés Forastello. Proyectos: ${pNames}.\nPrioridades: P1=Lun P2=Mar P3=Mié P4=Jue P5=Vie P6=Sáb P7=Dom.\nTareas:\n${sum}\nSi te piden crear una tarea respondé EXACTAMENTE:\n<<<TAREA>>>\n{"name":"...","proj":"id_proyecto","prio":1,"notes":"...","date":"YYYY-MM-DD"}\n<<<FIN>>>\nLuego 1 oración de confirmación. Español rioplatense, directo.`;
-      const res=await fetch('https://api.anthropic.com/v1/messages',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-        body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:600,system:sys,
-          messages:[...msgs.slice(-8).map(m=>({role:m.r==='ai'?'assistant':'user',content:m.t})),{role:'user',content:q}]})
-      });
-      const data=await res.json();
-      const raw=data.content?.[0]?.text||'No pude procesar eso.';
-      const jm=raw.match(/<<<TAREA>>>([\s\S]*?)<<<FIN>>>/);
-      if(jm){try{
-        const p=JSON.parse(jm[1].trim());
-        setTasks(t=>{const maxSeq=Math.max(0,...t.filter(x=>x.status==='pending').map(x=>x.seq||0));
-          return[...t,{id:Date.now(),name:p.name,proj:p.proj||projs[0]?.id,prio:p.prio||2,status:'pending',notes:p.notes||'',date:p.date||'',seq:maxSeq+1,created:today()}];});
-      }catch{}}
-      const clean=raw.replace(/<<<TAREA>>>[\s\S]*?<<<FIN>>>/,'').trim();
-      setMsgs(m=>[...m,{r:'ai',t:clean||'Tarea creada.',ts:nowt()}]);
-    }catch{setMsgs(m=>[...m,{r:'ai',t:'Error al conectar. Verificá tu API Key.',ts:nowt()}]);}
-    setLoading(false);
-  };
-
-  return <>
-    {!apiKey&&<div className="no-key-warn">
-      <strong>⚠ Asistente IA sin configurar</strong>
-      Necesitás una API Key de Anthropic para activarlo.
-      <button onClick={onOpenKey}>⚙️ Configurar API Key</button>
-    </div>}
-    <div className="ai-msgs">
-      {msgs.map((m,i)=><div key={i} className={`msg msg-${m.r==='ai'?'a':'u'}`}>
-        <div className="msg-bub">{m.t}</div><div className="msg-t">{m.ts}</div>
-      </div>)}
-      {loading&&<div className="msg msg-a"><div className="msg-bub"><div className="dots"><div className="dot"/><div className="dot"/><div className="dot"/></div></div></div>}
-      <div ref={endRef}/>
-    </div>
-    <div className="ai-foot">
-      <div className="ai-sugs">
-        {['¿Qué está vencido?','Tareas del lunes','Estado proyectos','Nueva tarea'].map((s,i)=>
-          <button key={i} className="ai-sug" onClick={()=>send(s)}>{s}</button>)}
-      </div>
-      <div className="ai-row">
-        <textarea className="ai-inp" rows={1} placeholder="Escribí o dictá lo que necesitás..."
-          value={inp} onChange={e=>setInp(e.target.value)}
-          onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}}/>
-        <button className="ai-send" onClick={()=>send()} disabled={!inp.trim()||loading}><Ic n="send" s={14} c="#fff"/></button>
-      </div>
-    </div>
-  </>;
+// ── GUIA DE VENTAS ───────────────────────────────────────
+function toggleStep(el){el.classList.toggle('open');}
+function openPropModal(){
+  document.getElementById('propFormWrap').style.display='block';
+  document.getElementById('propResultWrap').style.display='none';
+  document.getElementById('propModal').classList.add('open');
 }
-
-/* ── SIDEBAR CONTENT ── */
-function SBContent({projs,tasks,selProj,setSelProj,setPM,askDelProj,pct,doneN}){
-  return <div className="sb-inner">
-    <div className="sb-lbl">Proyectos<span className="sb-add" onClick={()=>setPM({})}>+</span></div>
-    <div className={`nav-item${selProj==='all'?' active':''}`} onClick={()=>setSelProj('all')}>
-      <div className="nav-dot" style={{background:'#64748B'}}/>
-      <div className="nav-body"><div className="nav-name">Todo</div></div>
-      <span className="nav-badge">{tasks.filter(t=>t.status!=='done').length}</span>
-    </div>
-    {projs.map(p=>{
-      const tot=tasks.filter(t=>t.proj===p.id).length;
-      const dn=tasks.filter(t=>t.proj===p.id&&t.status==='done').length;
-      const pc=tot?Math.round(dn/tot*100):0;
-      const pend=tasks.filter(t=>t.proj===p.id&&t.status!=='done').length;
-      return <div key={p.id} className={`nav-item${selProj===p.id?' active':''}`} onClick={()=>setSelProj(p.id)}>
-        <div className="nav-dot" style={{background:p.color}}/>
-        <div className="nav-body">
-          <div className="nav-name">{p.name}</div>
-          {tot>0&&<div className="pbar"><div className="pbar-fill" style={{width:pc+'%',background:p.color}}/></div>}
-        </div>
-        <span className="nav-badge">{pend}</span>
-        <div className="nav-acts" onClick={e=>e.stopPropagation()}>
-          <button className="nav-act" onClick={()=>setPM({...p})}><Ic n="edit" s={11}/></button>
-          <button className="nav-act del" onClick={()=>askDelProj(p)}><Ic n="trash" s={11}/></button>
-        </div>
-      </div>;
-    })}
-    <div className="sb-div"/>
-    <div className="sb-lbl">Global</div>
-    <div style={{padding:'6px 8px'}}>
-      <div className="pbar" style={{height:7,marginBottom:4}}><div className="pbar-fill" style={{width:pct+'%'}}/></div>
-      <div style={{fontSize:11,color:'var(--slate)',fontFamily:'DM Mono,monospace'}}>{doneN}/{tasks.length} cumplidas ({pct}%)</div>
-    </div>
-  </div>;
+function openContModal(){document.getElementById('contModal').classList.add('open');}
+function generarPropuesta(){
+  const empresa=document.getElementById('p-empresa').value.trim()||'[Empresa]';
+  const contacto=document.getElementById('p-contacto').value.trim()||'[Contacto]';
+  const dolor=document.getElementById('p-dolor').value.trim()||'[Dolor identificado]';
+  const agente=document.getElementById('p-agente-custom').value.trim()||'[Agente a implementar]';
+  const setupRaw=document.getElementById('p-setup').value.trim();
+  const setup=setupRaw?'$'+Number(setupRaw.replace(/\D/g,'')).toLocaleString('es-AR')+' ARS (pago unico)':'[Importe a definir]';
+  const feeRaw=document.getElementById('p-fee').value.trim();
+  const fee=feeRaw?'$'+Number(feeRaw.replace(/\D/g,'')).toLocaleString('es-AR')+' ARS/mes':'[Fee mensual a definir]';
+  const hoy=new Date();
+  const vence=new Date(hoy.getTime()+7*24*3600000);
+  const fmtDate=d=>d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
+  const texto=`PROPUESTA COMERCIAL — IAGENTES.TECH
+Fecha: ${fmtDate(hoy)}  |  Valida hasta: ${fmtDate(vence)}
+─────────────────────────────────────────────
+Para: ${contacto}
+Empresa: ${empresa}
+─────────────────────────────────────────────
+DIAGNOSTICO
+En nuestra reunion identificamos el siguiente dolor operativo:
+"${dolor}"
+─────────────────────────────────────────────
+SOLUCION PROPUESTA
+Agente a implementar: ${agente}
+Lo que cambia con este agente:
+> El proceso se automatiza — sin intervencion manual repetitiva
+> La informacion queda registrada y trazable
+> El equipo se enfoca en decisiones, no en tareas operativas
+─────────────────────────────────────────────
+INVERSION
+Implementacion / setup: ${setup}
+Fee mensual de mantenimiento: ${fee}
+─────────────────────────────────────────────
+PROXIMOS PASOS
+Si la propuesta es de tu interes, el siguiente paso es firmar el contrato y agendar la primera sesion.
+Esta propuesta vence el ${fmtDate(vence)}.
+─────────────────────────────────────────────
+Andres Forastello — Fundador
+IAGENTES.TECH | iagentes.tech@gmail.com`;
+  document.getElementById('propResult').textContent=texto;
+  document.getElementById('propFormWrap').style.display='none';
+  document.getElementById('propResultWrap').style.display='block';
 }
-
-/* ── PROJ MODAL ── */
-function ProjModal({proj,onClose,onSave}){
-  const isNew=!proj?.id;
-  const[name,setName]=useState(proj?.name||'');
-  const[color,setColor]=useState(proj?.color||PALETTE[0]);
-  const ok=name.trim().length>0;
-  return <div className="ov-bg" onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
-    <div className="modal sm">
-      <div className="modal-h"><div className="modal-t">{isNew?'✦ Nuevo Proyecto':'✏ Editar Proyecto'}</div>
-        <button onClick={onClose}><Ic n="x" s={18} c="rgba(255,255,255,.7)"/></button></div>
-      <div className="modal-b">
-        <div className="fld"><label className="lbl">Nombre *</label>
-          <input className="inp" value={name} onChange={e=>setName(e.target.value)} autoFocus placeholder="Nombre del proyecto"
-            onKeyDown={e=>{if(e.key==='Enter'&&ok)onSave({...proj,name:name.trim(),color});}}/></div>
-        <div className="fld"><label className="lbl">Color</label>
-          <div className="color-grid">{PALETTE.map(c=><div key={c} className={`color-dot${color===c?' sel':''}`} style={{background:c}} onClick={()=>setColor(c)}/>)}</div></div>
-        <div style={{display:'flex',alignItems:'center',gap:10,padding:'6px 0'}}>
-          <div style={{width:32,height:32,borderRadius:8,background:color,flexShrink:0}}/>
-          <span style={{fontSize:14,fontWeight:600}}>{name||'Vista previa'}</span>
-        </div>
-      </div>
-      <div className="modal-f">
-        <button className="btn-cl" onClick={onClose}>Cancelar</button>
-        <button className="btn-sv" disabled={!ok} onClick={()=>ok&&onSave({...proj,name:name.trim(),color})}><Ic n="check" s={13}/>{isNew?'Crear':'Guardar'}</button>
-      </div>
-    </div>
-  </div>;
+function copyPropuesta(){
+  const txt=document.getElementById('propResult').textContent;
+  navigator.clipboard.writeText(txt).then(()=>alert('Propuesta copiada al portapapeles.')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();alert('Propuesta copiada.');
+  });
 }
-
-/* ── PROJ DELETE MODAL ── */
-function ProjDelModal({proj,count,onClose,onDelAll,onDelKeep}){
-  return <div className="ov-bg" onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
-    <div className="modal sm">
-      <div className="modal-h" style={{background:'#7f1d1d'}}><div className="modal-t">🗑 Eliminar Proyecto</div>
-        <button onClick={onClose}><Ic n="x" s={18} c="rgba(255,255,255,.7)"/></button></div>
-      <div className="modal-b">
-        {count>0?<><div className="warn-box"><strong>⚠ {count} tarea{count!==1?'s':''} asignada{count!==1?'s':''}.</strong><br/>¿Qué hacemos con ellas?</div>
-          <p style={{fontSize:13,color:'var(--slate)'}}>Proyecto: <strong style={{color:'var(--text)'}}>{proj.name}</strong></p></>
-        :<p style={{fontSize:14}}>¿Eliminar <strong>{proj.name}</strong>?</p>}
-      </div>
-      <div className="modal-f" style={{flexDirection:'column',gap:8,alignItems:'stretch'}}>
-        {count>0&&<><button className="btn-danger" onClick={onDelAll}>Eliminar proyecto y sus {count} tareas</button>
-          <button className="btn-sv" style={{justifyContent:'center'}} onClick={onDelKeep}>Eliminar proyecto · conservar tareas</button></>}
-        {count===0&&<button className="btn-danger" onClick={onDelAll}>Sí, eliminar</button>}
-        <button className="btn-cl" style={{textAlign:'center'}} onClick={onClose}>Cancelar</button>
-      </div>
-    </div>
-  </div>;
+function descargarPropuestaPDF(){
+  if(!window.jspdf){alert('Cargando libreria PDF, intenta de nuevo en 2 segundos.');return;}
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const empresa=document.getElementById('p-empresa').value.trim()||'propuesta';
+  const txt=document.getElementById('propResult').textContent;
+  const lm=20,tw=170;let y=20;
+  doc.setFont('helvetica','normal');
+  txt.split('\n').forEach(line=>{
+    if(y>280){doc.addPage();y=20;}
+    if(/^[A-Z\s\-]{4,}$/.test(line.trim())&&line.trim().length>2){doc.setFont('helvetica','bold');doc.setFontSize(10);}
+    else{doc.setFont('helvetica','normal');doc.setFontSize(9.5);}
+    doc.splitTextToSize(line||' ',tw).forEach(wl=>{if(y>280){doc.addPage();y=20;}doc.text(wl,lm,y);y+=5;});
+  });
+  doc.save('Propuesta_IAGENTES_'+empresa.replace(/[^a-zA-Z0-9]/g,'_')+'.pdf');
 }
-
-
-/* VoiceButton */
-function VoiceButton(props){
-  var onTranscript = props.onTranscript;
-  var extra = props.extra || {};
-  var listening = React.useState(false);
-  var setListening = listening[1];
-  listening = listening[0];
-  var recRef = React.useRef(null);
-  var toggle = function(){
-    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(!SR){alert('Usa Chrome para voz.');return;}
-    if(listening){if(recRef.current)recRef.current.stop();setListening(false);return;}
-    var rec = new SR();
-    rec.lang = 'es-AR';
-    rec.continuous = false;
-    rec.interimResults = false;
-    rec.onstart = function(){setListening(true);};
-    rec.onresult = function(e){var txt=e.results[0][0].transcript;onTranscript(txt);};
-    rec.onerror = function(){setListening(false);};
-    rec.onend = function(){setListening(false);};
-    recRef.current = rec;
-    rec.start();
-  };
-  var baseStyle = {
-    width:32, height:32, border:'none', borderRadius:7, cursor:'pointer',
-    flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center',
-    fontSize:16, background: listening ? '#ef4444' : 'var(--blueL)',
-    color: listening ? '#fff' : 'var(--blue)',
-    animation: listening ? 'mic-pulse 1s infinite' : 'none'
-  };
-  return React.createElement('button', {
-    type:'button', onClick:toggle,
-    title: listening ? 'Escuchando... clic para detener' : 'Dictar nota por voz',
-    style: baseStyle
-  }, listening ? '⏹' : '🎙');
+function descargarContratoPDF(){
+  if(!window.jspdf){alert('Cargando libreria PDF, intenta de nuevo en 2 segundos.');return;}
+  const {jsPDF}=window.jspdf;
+  const razon=document.getElementById('c-razon').value.trim()||'[Razon Social]';
+  const cuit=document.getElementById('c-cuit').value.trim()||'[CUIT]';
+  const rep=document.getElementById('c-rep').value.trim()||'[Representante]';
+  const email=document.getElementById('c-email').value.trim()||'[Email]';
+  const agente=document.getElementById('c-agente').value.trim()||'[Agente]';
+  const plan=document.getElementById('c-plan').value;
+  const setup=(()=>{const v=document.getElementById('c-setup').value.trim();return v?'$'+Number(v.replace(/\D/g,'')).toLocaleString('es-AR')+' ARS':'[Importe a definir]';})();
+  const fee=(()=>{const v=document.getElementById('c-fee').value.trim();return v?'$'+Number(v.replace(/\D/g,'')).toLocaleString('es-AR')+' ARS/mes':'[Fee a definir]';})();
+  const pago=document.getElementById('c-pago').value.trim()||'Transferencia bancaria';
+  const fechaVal=document.getElementById('c-fecha').value;
+  const ciudad=document.getElementById('c-ciudad').value.trim()||'Buenos Aires';
+  let fechaStr='';
+  if(fechaVal){const fd=new Date(fechaVal+'T12:00:00');fechaStr=fd.getDate()+' de '+MES[fd.getMonth()]+' de '+fd.getFullYear();}
+  else{const hoy=new Date();fechaStr=hoy.getDate()+' de '+MES[hoy.getMonth()]+' de '+hoy.getFullYear();}
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const lm=20,rm=190,tw=170;let y=28;
+  doc.setFillColor(10,37,64);doc.rect(0,0,210,18,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(10);
+  doc.text('iAGENTES.TECH — Consultoria e Implementacion de Agentes de IA',105,11,{align:'center'});
+  doc.setTextColor(0,0,0);
+  const titulo=(t)=>{doc.setFont('helvetica','bold');doc.setFontSize(12);doc.splitTextToSize(t,tw).forEach(l=>{doc.text(l,105,y,{align:'center'});y+=6;});y+=2;};
+  const sub=(t)=>{if(y>265){doc.addPage();y=20;}doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text(t,lm,y);y+=5;};
+  const body=(t)=>{doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.splitTextToSize(t,tw).forEach(l=>{if(y>275){doc.addPage();y=20;}doc.text(l,lm,y);y+=5;});y+=2;};
+  const hr=()=>{doc.setDrawColor(180,180,180);doc.line(lm,y,rm,y);y+=5;};
+  titulo('CONTRATO DE PRESTACION DE SERVICIOS');
+  titulo('Consultoria e Implementacion de Agentes de Inteligencia Artificial');
+  body('En la ciudad de '+ciudad+', a los '+fechaStr+',');
+  hr();sub('PARTES');
+  body('PRESTADOR: Andres Forastello, DNI 23.470.054, CUIT 20-23470054-6, en adelante "IAGENTES.TECH"; y');
+  body('CLIENTE: '+razon+', CUIT '+cuit+', representado por '+rep+', correo '+email+', en adelante "EL CLIENTE".');
+  hr();sub('PRIMERA - OBJETO');
+  body('IAGENTES.TECH se compromete a disenar, desarrollar e implementar: '+agente+', bajo Plan '+plan+'.');
+  sub('SEGUNDA - PLAZO');
+  body('Vigencia a partir del '+fechaStr+', con plazo minimo de tres (3) meses, renovacion automatica salvo notificacion con 30 dias de anticipacion.');
+  sub('TERCERA - HONORARIOS');
+  body('Setup: '+setup+', pagadero al inicio. Fee mensual: '+fee+', dentro de los primeros 5 dias de cada mes. Forma de pago: '+pago+'.');
+  sub('CUARTA - CONFIDENCIALIDAD');
+  body('Ambas partes guardan confidencialidad sobre la informacion intercambiada, con vigencia de 2 anos posteriores al contrato.');
+  sub('QUINTA - RESCISION');
+  body('Cualquier parte puede rescindir notificando con 30 dias de anticipacion. La rescision no exime del pago de honorarios devengados.');
+  sub('SEXTA - JURISDICCION');
+  body('Las partes se someten a los Tribunales Ordinarios de la Ciudad Autonoma de Buenos Aires.');
+  sub('SEPTIMA - FIRMA DIGITAL');
+  body('La firma mediante medios digitales tiene plena validez juridica conforme al articulo 288 del Codigo Civil y Comercial.');
+  y+=8;if(y>265){doc.addPage();y=20;}
+  doc.setDrawColor(100,100,100);doc.line(lm,y,lm+70,y);doc.line(rm-70,y,rm,y);y+=5;
+  doc.setFont('helvetica','bold');doc.setFontSize(9.5);
+  doc.text('IAGENTES.TECH',lm,y);doc.text('EL CLIENTE',rm-70,y);y+=5;
+  doc.setFont('helvetica','normal');
+  doc.text('Andres Forastello',lm,y);doc.text(razon,rm-70,y);y+=5;
+  doc.text('CUIT 20-23470054-6',lm,y);doc.text('CUIT '+cuit,rm-70,y);y+=5;
+  doc.text('iagentes.tech@gmail.com',lm,y);doc.text(email,rm-70,y);
+  doc.save('Contrato_'+razon.replace(/[^a-zA-Z0-9]/g,'_')+'_IAGENTES.pdf');
+  closeModal('contModal');
 }
-
-/* ── TASK MODAL ── */
-function TaskModal({t,projs,onClose,onSave}){
-  const isNew=!t?.id;
-  const[f,setF]=useState(t||{name:'',proj:projs[0]?.id||'',status:'pending',prio:2,notes:'',date:''});
-  const u=k=>v=>setF(p=>({...p,[k]:v}));
-  const ok=f.name.trim().length>0;
-  useEffect(()=>{
-    const h=e=>{if(e.key==='Escape')onClose();};
-    document.addEventListener('keydown',h);return()=>document.removeEventListener('keydown',h);
-  },[]);
-  return <div className="ov-bg" onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
-    <div className="modal">
-      <div className="modal-h"><div className="modal-t">{isNew?'✦ Nueva Tarea':'✏ Editar Tarea'}</div>
-        <button onClick={onClose}><Ic n="x" s={18} c="rgba(255,255,255,.7)"/></button></div>
-      <div className="modal-b">
-        <div className="fld"><label className="lbl">Nombre *</label>
-          <input className="inp" placeholder="¿Qué hay que hacer?" value={f.name} onChange={e=>u('name')(e.target.value)} autoFocus
-            onKeyDown={e=>{if(e.key==='Enter'&&ok)onSave(f);}}/></div>
-        <div className="fld"><label className="lbl">Proyecto</label>
-          <div className="seg">{projs.map(p=><button key={p.id} className="sb"
-            style={f.proj===p.id?{background:p.color,borderColor:p.color,color:'#fff'}:{}}
-            onClick={()=>u('proj')(p.id)}>{p.name}</button>)}</div></div>
-        <div className="fld"><label className="lbl">Prioridad / Día</label>
-          <div className="seg" style={{flexWrap:'wrap',gap:4}}>{PRIO_DIAS.map(([n,c,l])=>
-            <button key={n} className="sb" style={f.prio===n?{background:c,borderColor:c,color:'#fff',minWidth:60}:{minWidth:60}} onClick={()=>u('prio')(n)}>P{n} {l}</button>)}</div></div>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-          <div className="fld"><label className="lbl">Estado</label>
-            <select className="inp" value={f.status} onChange={e=>u('status')(e.target.value)}>
-              <option value="pending">🔴 Pendiente</option>
-              <option value="partial">🟡 En curso</option>
-              <option value="done">✅ Cumplida</option>
-            </select></div>
-          <div className="fld"><label className="lbl">Posición en la lista</label>
-            <input className="inp" type="number" min="1" placeholder="Ej: 3" value={f.seq||''} onChange={e=>u('seq')(e.target.value===''?undefined:parseInt(e.target.value))}/></div>
-        </div>
-        <div className="fld"><label className="lbl">Fecha límite</label>
-          <input className="inp" type="date" value={f.date} onChange={e=>u('date')(e.target.value)}/></div>
-        <div className="fld"><label className="lbl">Notas</label>
-          <div style={{display:'flex',gap:8,alignItems:'flex-start'}}>
-            <textarea className="inp" placeholder="Detalles, próximos pasos..." value={f.notes} onChange={e=>u('notes')(e.target.value)} style={{flex:1,minHeight:80}}/>
-            <VoiceButton onTranscript={txt=>u('notes')(f.notes ? f.notes+' '+txt : txt)}/>
-          </div>
-        </div>
-      </div>
-      <div className="modal-f">
-        <button className="btn-cl" onClick={onClose}>Cancelar</button>
-        <button className="btn-sv" disabled={!ok} onClick={()=>ok&&onSave(f)}><Ic n="check" s={13}/>{isNew?'Crear':'Guardar'}</button>
-      </div>
-    </div>
-  </div>;
+// ── CLIENTES ────────────────────────────────────────────
+let editCliIdx=null, selCliColor='tc-green';
+function renderClients(){
+  const g=document.getElementById('clientGrid');g.innerHTML='';
+  clients.forEach((c,i)=>{
+    const div=document.createElement('div');
+    div.className='ctile '+c.color;div.dataset.i=i;
+    div.innerHTML=`<div class="ctile-hint">✎</div><div class="ctile-name">${esc(c.name)}</div><div class="ctile-status">${esc(c.status)}</div><div class="ctile-badge">${esc(c.badge)}</div>`;
+    g.appendChild(div);
+  });
+  g.onclick=e=>{const t=e.target.closest('.ctile');if(t)openCliModal(parseInt(t.dataset.i));};
 }
-
-/* ── API KEY MODAL ── */
-function ApiKeyModal({current,onClose,onSave}){
-  const[val,setVal]=useState(current||'');
-  return <div className="ov-bg" onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
-    <div className="modal sm">
-      <div className="modal-h"><div className="modal-t">⚙️ API Key de Anthropic</div>
-        <button onClick={onClose}><Ic n="x" s={18} c="rgba(255,255,255,.7)"/></button></div>
-      <div className="modal-b">
-        <div className="apikey-note">
-          <strong>¿Cómo obtenerla?</strong><br/>
-          Entrá a <strong>console.anthropic.com</strong> → API Keys → Create Key → copiá el código que empieza con <code>sk-ant-</code>
-        </div>
-        <div className="fld"><label className="lbl">API Key</label>
-          <input className="inp" type="password" placeholder="sk-ant-api03-..." value={val} onChange={e=>setVal(e.target.value)} autoFocus/>
-          <div style={{fontSize:11,color:'var(--slate)',marginTop:5}}>Se guarda solo en este navegador. No se envía a servidores de IAGENTES.TECH.</div>
-        </div>
-        {val&&<div style={{fontSize:12,color:'var(--green)',marginBottom:4}}>✓ API Key ingresada</div>}
-      </div>
-      <div className="modal-f">
-        {current&&<button className="btn-danger" style={{marginRight:'auto'}} onClick={()=>onSave('')}>Borrar</button>}
-        <button className="btn-cl" onClick={onClose}>Cancelar</button>
-        <button className="btn-sv" onClick={()=>onSave(val.trim())}><Ic n="check" s={13}/>Guardar</button>
-      </div>
-    </div>
-  </div>;
+function addClientTile(){editCliIdx=-1;openCliModal(-1);}
+function openCliModal(i){
+  editCliIdx=i;
+  const c=i>=0?clients[i]:{name:'',status:'',badge:'Nuevo',color:'tc-green'};
+  document.getElementById('cName').value=c.name;
+  document.getElementById('cStatus').value=c.status;
+  document.getElementById('cBadge').value=c.badge;
+  selCliColor=c.color;
+  document.querySelectorAll('#cColorRow .color-dot').forEach(d=>d.classList.toggle('sel',d.dataset.c===c.color));
+  document.getElementById('cDelBtn').style.display=i>=0?'':'none';
+  document.getElementById('clientModal').classList.add('open');
 }
-
-/* ══════════════ APP ══════════════ */
-function App(){
-  const[tasks,setTasks]=useSupaTable('op_tasks_v5','co_tasks',INIT_TASKS);
-  const[projs,setProjs]=useSupaTable('op_projs_v5','co_projs',INIT_PROJS);
-  const[apiKey,setApiKey]=useLS('op_apikey_v5','');
-  const[selProj,setSelProj]=useState('all');
-  const[filt,setFilt]=useState('all');
-  const[taskMod,setTaskMod]=useState(null);
-  const[projMod,setProjMod]=useState(null);
-  const[projDelMod,setProjDelMod]=useState(null);
-  const[apiMod,setApiMod]=useState(false);
-  const[toast,setToast]=useState(null);
-  const[aiOpen,setAiOpen]=useState(false);
-  const[sbOpen,setSbOpen]=useState(true);
-  const[drawer,setDrawer]=useState(false);
-  const[aiSheet,setAiSheet]=useState(false);
-  const[mobTab,setMobTab]=useState('tasks');
-  const[dragId,setDragId]=useState(null);
-  const importRef=useRef(null);
-
-  const notify=(msg,err)=>{setToast({msg,err});setTimeout(()=>setToast(null),3000);};
-
-  /* Keyboard shortcuts */
-  useEffect(()=>{
-    const h=e=>{
-      const tag=e.target.tagName;
-      if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT')return;
-      if(e.key==='n'||e.key==='N'){e.preventDefault();setTaskMod({});}
-      if(e.key==='a'||e.key==='A'){e.preventDefault();setAiOpen(v=>!v);}
-      if(e.key==='Escape'){setTaskMod(null);setProjMod(null);setApiMod(false);setAiOpen(false);}
-    };
-    document.addEventListener('keydown',h);
-    return()=>document.removeEventListener('keydown',h);
-  },[]);
-
-  /* Drag & drop */
-  const handleDragStart=useCallback(id=>setDragId(id),[]);
-  const handleDragOver=useCallback(id=>{
-    if(!dragId||dragId===id)return;
-    setTasks(prev=>{
-      const drag=prev.find(t=>t.id===dragId);
-      const target=prev.find(t=>t.id===id);
-      if(!drag||!target||drag.status!==target.status)return prev;
-      const st=drag.status;
-      const grp=[...prev.filter(t=>t.status===st)].sort((a,b)=>(a.seq||99)-(b.seq||99));
-      const fi=grp.findIndex(t=>t.id===dragId);
-      const ti=grp.findIndex(t=>t.id===id);
-      if(fi===ti)return prev;
-      const r=[...grp];r.splice(fi,1);r.splice(ti,0,drag);
-      const sm={};r.forEach((t,i)=>sm[t.id]=i+1);
-      return prev.map(t=>sm[t.id]!==undefined?{...t,seq:sm[t.id]}:t);
-    });
-  },[dragId]);
-  const handleDrop=useCallback(()=>setDragId(null),[]);
-
-  /* CRUD Proyectos */
-  const saveProj=p=>{
-    if(p.id){setProjs(prev=>prev.map(x=>x.id===p.id?{...x,...p}:x));notify('Proyecto actualizado ✓');}
-    else{const id='p_'+Date.now();setProjs(prev=>[...prev,{id,name:p.name,color:p.color}]);notify('Proyecto creado ✓');}
-    setProjMod(null);
-  };
-  const askDelProj=p=>{const count=tasks.filter(t=>t.proj===p.id).length;setProjDelMod({proj:p,count});};
-  const delProjAll=()=>{
-    const{proj}=projDelMod;
-    setTasks(t=>t.filter(x=>x.proj!==proj.id));
-    setProjs(p=>p.filter(x=>x.id!==proj.id));
-    if(selProj===proj.id)setSelProj('all');
-    notify('Proyecto eliminado',true);setProjDelMod(null);
-  };
-  const delProjKeep=()=>{
-    const{proj}=projDelMod;
-    setProjs(p=>p.filter(x=>x.id!==proj.id));
-    if(selProj===proj.id)setSelProj('all');
-    notify('Proyecto eliminado · tareas conservadas',true);setProjDelMod(null);
-  };
-
-  /* CRUD Tareas */
-  const saveTask=f=>{
-    if(f.id){
-      setTasks(prev=>{
-        const old=prev.find(x=>x.id===f.id);
-        if(!old)return prev.map(x=>x.id===f.id?{...x,...f}:x);
-        const newSeqRaw=f.seq?parseInt(f.seq):null;
-        // Si cambió la posición dentro del mismo grupo de estado, reordenar
-        if(newSeqRaw&&old.status===f.status){
-          const grp=[...prev.filter(t=>t.status===f.status)].sort((a,b)=>(a.seq||99)-(b.seq||99));
-          const clamped=Math.max(1,Math.min(newSeqRaw,grp.length));
-          const sin=grp.filter(t=>t.id!==f.id);
-          sin.splice(clamped-1,0,{...f,seq:clamped});
-          const sm={};sin.forEach((t,i)=>sm[t.id]=i+1);
-          return prev.map(t=>{
-            if(t.id===f.id)return{...t,...f,seq:sm[t.id]??clamped};
-            if(sm[t.id]!==undefined)return{...t,seq:sm[t.id]};
-            return t;
-          });
-        }
-        return prev.map(x=>x.id===f.id?{...x,...f}:x);
-      });
-      notify('Tarea actualizada ✓');
+document.querySelectorAll('#cColorRow .color-dot').forEach(d=>{
+  d.onclick=function(){selCliColor=this.dataset.c;document.querySelectorAll('#cColorRow .color-dot').forEach(x=>x.classList.remove('sel'));this.classList.add('sel');};
+});
+document.getElementById('cSaveBtn').onclick=function(){
+  const obj={name:document.getElementById('cName').value.trim()||'Cliente',status:document.getElementById('cStatus').value.trim(),badge:document.getElementById('cBadge').value.trim(),color:selCliColor};
+  if(editCliIdx>=0)clients[editCliIdx]=obj;else clients.push(obj);
+  sto('v5_clients',clients);renderClients();closeModal('clientModal');
+};
+document.getElementById('cDelBtn').onclick=function(){
+  if(editCliIdx>=0&&confirm('Eliminar este cliente del panel?')){
+    clients.splice(editCliIdx,1);sto('v5_clients',clients);renderClients();closeModal('clientModal');
+  }
+};
+// ── CASH FLOW ────────────────────────────────────────────
+let cfEdit=null;
+function renderCF(){
+  const tbl=document.getElementById('cfTable');
+  const months=cf.months;
+  let h='<thead><tr><th>Cliente</th>';
+  months.forEach(m=>h+=`<th>${m}</th>`);
+  h+='<th style="background:#1a3a5c;">Total</th></tr></thead>';
+  let b='<tbody>';
+  cf.rows.forEach((row,ri)=>{
+    b+='<tr>';
+    if(cfEdit&&cfEdit.row===ri&&cfEdit.col===-1){
+      b+=`<td class="editing"><div class="cf-name-edit-wrap"><input class="cf-name-inp" id="cf_name_inp" type="text" value="${esc(row.client)}"><button class="cf-del-row" id="cf_del_row">✕ Eliminar</button></div></td>`;
     } else {
-      setTasks(t=>{const ms=Math.max(0,...t.filter(x=>x.status===f.status).map(x=>x.seq||0));return[...t,{...f,id:Date.now(),seq:ms+1,created:today()}];});
-      notify('Tarea creada ✓');
+      b+=`<td data-row="${ri}" data-col="-1">${esc(row.client)}</td>`;
     }
-    setTaskMod(null);
-  };
-  const delTask=id=>{if(!window.confirm('¿Eliminar esta tarea?'))return;setTasks(t=>t.filter(x=>x.id!==id));notify('Eliminada',true);};
-  const stTask=(id,ns)=>{
-    setTasks(prev=>{
-      const task=prev.find(x=>x.id===id);
-      if(!task||task.status===ns)return prev;
-      const dest=prev.filter(x=>x.id!==id&&x.status===ns);
-      const newSeq=dest.length+1;
-      const src=task.status;
-      return prev.map(x=>{
-        if(x.id===id)return{...x,status:ns,seq:newSeq};
-        if(x.status===src){
-          const s=[...prev.filter(t=>t.status===src&&t.id!==id)].sort((a,b)=>(a.seq||99)-(b.seq||99));
-          const i=s.findIndex(t=>t.id===x.id);
-          return i>=0?{...x,seq:i+1}:x;
-        }
-        return x;
-      });
+    let rowTotal=0;
+    row.vals.forEach((v,ci)=>{
+      rowTotal+=Number(v)||0;
+      if(cfEdit&&cfEdit.row===ri&&cfEdit.col===ci){
+        b+=`<td class="editing"><input id="cf_inp" type="number" value="${v}" min="0"></td>`;
+      } else {
+        const n=Number(v)||0;
+        b+=`<td class="${n===0?'cf-zero':'cf-positive'}" data-row="${ri}" data-col="${ci}">${n===0?'—':fmt(n)}</td>`;
+      }
     });
+    b+=`<td class="cf-total-col">${rowTotal===0?'—':fmt(rowTotal)}</td></tr>`;
+  });
+  b+='<tr class="cf-total-row"><td>TOTAL MES</td>';
+  let grand=0;
+  months.forEach((_,ci)=>{
+    const s=cf.rows.reduce((a,r)=>a+(Number(r.vals[ci])||0),0);grand+=s;
+    b+=`<td>${s===0?'—':fmt(s)}</td>`;
+  });
+  b+=`<td class="cf-total-col">${grand===0?'—':fmt(grand)}</td></tr></tbody>`;
+  tbl.innerHTML=h+b;
+  tbl.querySelectorAll('td[data-col]').forEach(td=>{
+    const col=parseInt(td.dataset.col);
+    if(col>=0) td.ondblclick=()=>{cfEdit={row:parseInt(td.dataset.row),col};renderCF();};
+    else       td.ondblclick=()=>{cfEdit={row:parseInt(td.dataset.row),col:-1};renderCF();};
+  });
+  const nameInp=document.getElementById('cf_name_inp');
+  const delBtn=document.getElementById('cf_del_row');
+  if(nameInp){
+    nameInp.focus();nameInp.select();
+    if(delBtn){
+      delBtn.addEventListener('mousedown',e=>e.preventDefault());
+      delBtn.addEventListener('click',()=>{if(cfEdit){const ri=cfEdit.row;cfEdit=null;cf.rows.splice(ri,1);sto('v5_cf',cf);renderCF();}});
+    }
+    const saveName=()=>{if(cfEdit&&cfEdit.col===-1){const v=nameInp.value.trim();if(v)cf.rows[cfEdit.row].client=v;sto('v5_cf',cf);}cfEdit=null;renderCF();};
+    nameInp.onblur=saveName;
+    nameInp.onkeydown=e=>{if(e.key==='Enter')saveName();if(e.key==='Escape'){cfEdit=null;renderCF();}};
+  }
+  const inp=document.getElementById('cf_inp');
+  if(inp){
+    inp.focus();inp.select();
+    const saveVal=()=>{if(cfEdit&&cfEdit.col>=0){cf.rows[cfEdit.row].vals[cfEdit.col]=Number(inp.value)||0;sto('v5_cf',cf);}cfEdit=null;renderCF();};
+    inp.onblur=saveVal;
+    inp.onkeydown=e=>{if(e.key==='Enter')saveVal();if(e.key==='Escape'){cfEdit=null;renderCF();}};
+  }
+}
+document.getElementById('cfAddRow').onclick=function(){
+  const name=prompt('Nombre del cliente:');
+  if(name&&name.trim()){cf.rows.push({client:name.trim(),vals:cf.months.map(()=>0)});sto('v5_cf',cf);renderCF();}
+};
+// ── TAREAS ──────────────────────────────────────────────
+let activeTab='p1', editTaskIdx=null;
+document.querySelectorAll('.ttab').forEach(btn=>{
+  btn.onclick=()=>{
+    activeTab=btn.dataset.tab;
+    document.querySelectorAll('.ttab').forEach(t=>t.classList.toggle('on',t.dataset.tab===activeTab));
+    document.querySelectorAll('.tgroup').forEach(g=>g.classList.toggle('on',g.id==='grp-'+activeTab));
   };
-  const inlineSave=(id,name)=>{setTasks(t=>t.map(x=>x.id===id?{...x,name}:x));};
-
-  /* Export / Import */
-  const exportData=()=>{
-    const blob=new Blob([JSON.stringify({version:5,exportedAt:new Date().toISOString(),tasks,projs},null,2)],{type:'application/json'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;a.download='operaciones_'+new Date().toLocaleDateString('es-AR').replace(/\//g,'-')+'.json';a.click();
-    URL.revokeObjectURL(url);notify('Exportado ✓');
-  };
-  const importData=e=>{
-    const file=e.target.files?.[0];if(!file)return;
-    const r=new FileReader();
-    r.onload=ev=>{
-      try{
-        const d=JSON.parse(ev.target.result);
-        if(!d.tasks||!d.projs)throw new Error();
-        if(!window.confirm('¿Reemplazar todos los datos actuales?'))return;
-        setTasks(d.tasks);setProjs(d.projs);notify('Importado ✓');
-      }catch{notify('Archivo no válido',true);}
-      e.target.value='';
-    };r.readAsText(file);
-  };
-
-  /* Filtrado */
-  const filtered=useMemo(()=>tasks.filter(t=>{
-    const mp=selProj==='all'||t.proj===selProj;
-    const pn=filt.startsWith('p')&&!isNaN(filt.slice(1))?parseInt(filt.slice(1)):null;
-    const ms=filt==='all'||filt===t.status
-      ||(filt==='overdue'&&isOv(t.date)&&t.status!=='done')
-      ||(pn!==null&&t.prio===pn);
-    return mp&&ms;
-  }),[tasks,selProj,filt]);
-
-  const grouped=useMemo(()=>({
-    pending:[...filtered.filter(t=>t.status==='pending')].sort((a,b)=>(a.seq||99)-(b.seq||99)),
-    partial:[...filtered.filter(t=>t.status==='partial')].sort((a,b)=>(a.seq||99)-(b.seq||99)),
-    done:[...filtered.filter(t=>t.status==='done')].sort((a,b)=>(a.seq||99)-(b.seq||99)),
-  }),[filtered]);
-
-  const doneN=tasks.filter(t=>t.status==='done').length;
-  const pct=tasks.length?Math.round(doneN/tasks.length*100):0;
-  const kpis=[
-    {l:'Pendientes',v:tasks.filter(t=>t.status==='pending').length,ico:'🔴',c:'var(--red)',bg:'var(--redL)'},
-    {l:'En curso',v:tasks.filter(t=>t.status==='partial').length,ico:'🟡',c:'var(--amber)',bg:'var(--amberL)'},
-    {l:'Cumplidas',v:tasks.filter(t=>t.status==='done').length,ico:'✅',c:'var(--green)',bg:'var(--greenL)'},
-    {l:'Para hoy (P1 Lun)',v:tasks.filter(t=>t.prio===1&&t.status!=='done').length,ico:'⚡',c:'#EF4444',bg:'#FEF2F2'},
-    {l:'Vencidas',v:tasks.filter(t=>isOv(t.date)&&t.status!=='done').length,ico:'⏰',c:'#c2410c',bg:'#fff7ed'},
-  ];
-  const GROUPS=[
-    {k:'pending',l:'Pendientes',c:'var(--red)'},
-    {k:'partial',l:'En curso',c:'var(--amber)'},
-    {k:'done',l:'Cumplidas',c:'var(--green)'},
-  ];
-  const FILTERS=[
-    {id:'all',l:'Todas'},{id:'pending',l:'Pendientes'},{id:'partial',l:'En curso'},
-    {id:'done',l:'Cumplidas'},{id:'overdue',l:'⏰ Vencidas'},
-    ...PRIO_DIAS.map(([n,c,l])=>({id:'p'+n,l:`P${n} ${l}`,c})),
-  ];
-  const curPname=selProj==='all'?'Todo':(projs.find(p=>p.id===selProj)?.name||'Todo');
-  const sbProps={projs,tasks,selProj,setSelProj,setPM:setProjMod,askDelProj,pct,doneN};
-
-  const taskGrid=<>
-    <div className="kpis">{kpis.map(k=><div key={k.l} className="kpi">
-      <div className="kpi-ico" style={{background:k.bg}}>{k.ico}</div>
-      <div><div className="kpi-val" style={{color:k.c}}>{k.v}</div><div className="kpi-lbl">{k.l}</div></div>
-    </div>)}</div>
-    <div className="gbar">
-      <div className="gbar-track"><div className="gbar-fill" style={{width:pct+'%'}}/></div>
-      <div className="gbar-lbl">{pct}% completado · {doneN} de {tasks.length} tareas</div>
-    </div>
-    {GROUPS.map(g=>{
-      const rows=grouped[g.k];
-      if(!rows.length&&filt!=='all'&&filt!==g.k&&filt!=='urgent'&&filt!=='overdue')return null;
-      return <div key={g.k} className="group">
-        <div className="group-head" style={{borderBottomColor:g.c+'50'}}>
-          <div className="group-stripe" style={{background:g.c}}/>
-          <span className="group-lbl" style={{color:g.c}}>{g.l}</span>
-          <span className="group-count" style={{background:g.c+'20',color:g.c}}>{rows.length}</span>
-        </div>
-        <div className="group-rows">
-          {rows.length===0?<div className="empty-state">Sin tareas</div>
-          :rows.map(t=><TaskRow key={t.id} task={t} projs={projs}
-              onEdit={setTaskMod} onDel={delTask} onSt={stTask}
-              onDragStart={handleDragStart} onDragOver={handleDragOver} onDrop={handleDrop}
-              onInline={inlineSave}/>)}
-        </div>
-      </div>;
-    })}
-  </>;
-
-  const aiProps={tasks,projs,setTasks,apiKey,onOpenKey:()=>setApiMod(true)};
-
-  return <div>
-    {/* HEADER */}
-    <header className="hdr">
-      <div style={{display:'flex',alignItems:'center',gap:8}}>
-        <button className="btn-icon" onClick={()=>{if(isMob())setDrawer(true);else setSbOpen(v=>!v);}}>
-          <Ic n="list" s={15} c="rgba(255,255,255,.7)"/>
-        </button>
-        <div className="logo">
-          <div className="logo-box"><span className="ia">ia</span></div>
-          <div className="logo-name">
-            <div className="n1">IAGENTES<em>.TECH</em></div>
-            <div className="n2">Centro de Operaciones</div>
+});
+function renumTasks(p){let n=1;tasks.filter(t=>t.p===p).sort((a,b)=>(a.n||0)-(b.n||0)).forEach(t=>t.n=n++);}
+function renderTasks(){
+  ['p1','p2','p3'].forEach(p=>{
+    const g=document.getElementById('grp-'+p);
+    const pt=tasks.filter(t=>t.p===p).sort((a,b)=>(a.n||0)-(b.n||0));
+    g.innerHTML='';
+    if(!pt.length){g.innerHTML='<div class="empty-msg">Sin tareas en este grupo</div>';return;}
+    pt.forEach(t=>{
+      const idx=tasks.indexOf(t);
+      const div=document.createElement('div');
+      div.className='titem'+(t.done?' tdone':'')+(editTaskIdx===idx?' editing':'');
+      if(editTaskIdx===idx){
+        div.innerHTML=`<div style="width:100%;display:flex;flex-direction:column;gap:8px;padding:2px 0;">
+          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+            <span style="font-size:.6rem;color:#94a3b8;font-weight:700;">Prioridad:</span>
+            <button class="tbtn" data-a="tset" data-p="p1" data-idx="${idx}" style="padding:0 12px;font-weight:800;font-size:.68rem;height:28px;${t.p==='p1'?'background:#dc2626;color:#fff':'background:#f1f5f9;color:#475569'}">P1</button>
+            <button class="tbtn" data-a="tset" data-p="p2" data-idx="${idx}" style="padding:0 12px;font-weight:800;font-size:.68rem;height:28px;${t.p==='p2'?'background:#ea580c;color:#fff':'background:#f1f5f9;color:#475569'}">P2</button>
+            <button class="tbtn" data-a="tset" data-p="p3" data-idx="${idx}" style="padding:0 12px;font-weight:800;font-size:.68rem;height:28px;${t.p==='p3'?'background:#ca8a04;color:#fff':'background:#f1f5f9;color:#475569'}">P3</button>
+            <span style="font-size:.6rem;color:#94a3b8;font-weight:700;margin-left:8px;">Orden #${t.n}:</span>
+            <button class="tbtn" data-a="tup" data-idx="${idx}" style="background:#f1f5f9;color:#475569;height:28px;font-size:.85rem;">&#8593;</button>
+            <button class="tbtn" data-a="tdown" data-idx="${idx}" style="background:#f1f5f9;color:#475569;height:28px;font-size:.85rem;">&#8595;</button>
           </div>
-        </div>
-      </div>
-      <span className="hdr-pill">{tasks.filter(t=>t.status!=='done').length} activas · {pct}%</span>
-      <div className="hdr-right">
-        <button className={`btn-icon${apiKey?' ok':' warn'}`} onClick={()=>setApiMod(true)} title="Configurar API Key del Asistente IA">
-          <Ic n="key" s={15} c={apiKey?'#6EE7B7':'#FCA5A5'}/>
-        </button>
-        <button className="btn-icon" onClick={exportData} title="Exportar"><Ic n="up" s={15} c="rgba(255,255,255,.65)"/></button>
-        <button className="btn-icon" onClick={()=>importRef.current?.click()} title="Importar"><Ic n="down" s={15} c="rgba(255,255,255,.65)"/></button>
-        <input ref={importRef} type="file" accept=".json" style={{display:'none'}} onChange={importData}/>
-        <button className={`btn-icon${aiOpen?' on':''}`} onClick={()=>setAiOpen(v=>!v)} title="Asistente IA (tecla A)">
-          <Ic n="ai" s={15} c={aiOpen?'#fff':'rgba(255,255,255,.7)'}/>
-        </button>
-        <button className="btn-new" onClick={()=>setTaskMod({})}>
-          <Ic n="plus" s={14}/>Nueva Tarea
-        </button>
-      </div>
-    </header>
-
-    {/* DESKTOP LAYOUT */}
-    <div className="layout">
-      <nav className={`sidebar${sbOpen?'':' closed'}`}>
-        <SBContent {...sbProps}/>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input class="tedit-inp" id="ti_${idx}" value="${esc(t.text)}" style="flex:1;min-width:0;height:34px;">
+            <button class="tbtn tb-save" data-a="save" data-idx="${idx}" style="width:auto;padding:0 14px;height:34px;font-size:.75rem;">&#10003; Ok</button>
+            <button class="tbtn tb-cancel" data-a="cancel" style="height:34px;width:34px;">&#10005;</button>
+          </div>
+        </div>`;
+        setTimeout(()=>{const el=document.getElementById('ti_'+idx);if(el){el.focus();el.select();}},30);
+      } else {
+        div.innerHTML=`<span class="pbadge bp${t.p.slice(1)}" data-a="tpriority" data-idx="${idx}" style="cursor:pointer;" title="Clic: cambiar prioridad">${t.p.toUpperCase()}</span><span class="tnum">${t.n||'·'}</span>
+          <div class="tcontent">
+            <div class="ttext-main">${esc(t.text)}</div>
+            ${t.meta?'<div class="ttext-meta">'+esc(t.meta)+'</div>':''}
+          </div>
+          <div class="tbtns">
+            <button class="tbtn tb-check" data-a="check" data-idx="${idx}" title="${t.done?'Desmarcar':'Completar'}">&#10003;</button>
+            <button class="tbtn tb-edit"  data-a="edit"  data-idx="${idx}" title="Editar">&#9998;</button>
+            <button class="tbtn tb-del"   data-a="del"   data-idx="${idx}" title="Eliminar">&#10005;</button>
+          </div>`;
+      }
+      g.appendChild(div);
+    });
+    const pend=pt.filter(t=>!t.done).length;
+    document.getElementById('cnt-'+p).textContent=pend?'('+pend+')':'';
+  });
+}
+['p1','p2','p3'].forEach(p=>{
+  document.getElementById('grp-'+p).addEventListener('click',function(e){
+    const btn=e.target.closest('[data-a]');if(!btn)return;
+    const a=btn.dataset.a,idx=parseInt(btn.dataset.idx);
+    if(a==='check'){tasks[idx].done=!tasks[idx].done;sto('v6_tasks',tasks);renderTasks();}
+    else if(a==='edit'){editTaskIdx=idx;renderTasks();}
+    else if(a==='del'){tasks.splice(idx,1);renumTasks(p);sto('v6_tasks',tasks);renderTasks();}
+    else if(a==='tpriority'){const ps=['p1','p2','p3'];const cur=ps.indexOf(tasks[idx].p);tasks[idx].p=ps[(cur+1)%3];['p1','p2','p3'].forEach(pp=>renumTasks(pp));sto('v6_tasks',tasks);renderTasks();}
+    else if(a==='tset'){tasks[idx].p=btn.dataset.p;['p1','p2','p3'].forEach(pp=>renumTasks(pp));sto('v6_tasks',tasks);renderTasks();}
+    else if(a==='tup'){const t=tasks[idx];const sp=tasks.filter(x=>x.p===t.p).sort((a,b)=>a.n-b.n);const pos=sp.findIndex(x=>x===t);if(pos>0){const tmp=sp[pos-1].n;sp[pos-1].n=t.n;t.n=tmp;}sto('v6_tasks',tasks);renderTasks();}
+    else if(a==='tdown'){const t=tasks[idx];const sp=tasks.filter(x=>x.p===t.p).sort((a,b)=>a.n-b.n);const pos=sp.findIndex(x=>x===t);if(pos<sp.length-1){const tmp=sp[pos+1].n;sp[pos+1].n=t.n;t.n=tmp;}sto('v6_tasks',tasks);renderTasks();}
+    else if(a==='save'){const inp=document.getElementById('ti_'+idx);if(inp&&inp.value.trim())tasks[idx].text=inp.value.trim();editTaskIdx=null;sto('v6_tasks',tasks);renderTasks();}
+    else if(a==='cancel'){editTaskIdx=null;renderTasks();}
+  });
+  document.getElementById('grp-'+p).addEventListener('keydown',function(e){
+    if(editTaskIdx===null)return;
+    if(e.key==='Enter'){const inp=document.getElementById('ti_'+editTaskIdx);if(inp&&inp.value.trim())tasks[editTaskIdx].text=inp.value.trim();editTaskIdx=null;sto('v6_tasks',tasks);renderTasks();}
+    if(e.key==='Escape'){editTaskIdx=null;renderTasks();}
+  });
+});
+document.getElementById('addTaskBtn').onclick=addTask;
+document.getElementById('newTaskInp').addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});
+function addTask(){
+  const inp=document.getElementById('newTaskInp'),txt=inp.value.trim();if(!txt)return;
+  const pt=tasks.filter(t=>t.p===activeTab);
+  tasks.push({text:txt,meta:'',p:activeTab,n:(pt.length?Math.max(...pt.map(t=>t.n||0)):0)+1,done:false});
+  sto('v6_tasks',tasks);inp.value='';renderTasks();
+}
+// ── AGENDA PERSONAL ─────────────────────────────────────
+const PL=['p1','p2','p3','p4'];
+const PLN={p1:'Prioridad 1',p2:'Prioridad 2',p3:'Prioridad 3',p4:'Prioridad 4'};
+let editPersIdx=null;
+function renderPers(){
+  const g=document.getElementById('persGrid');g.innerHTML='';
+  personal.forEach((item,i)=>{
+    const div=document.createElement('div');
+    div.className='ptile pp'+item.p.slice(1);
+    if(editPersIdx===i){
+      div.innerHTML=`<div class="ptop"><span class="pbadge-p" data-pa="cycle" data-pi="${i}">${item.p.toUpperCase()}</span><input class="pedit-inp" id="pi_${i}" value="${esc(item.text)}"><button class="pedit-save" data-pa="psave" data-pi="${i}">&#10003;</button><button class="pdel" data-pa="pcancel" data-pi="${i}">&#10005;</button></div><div style="font-size:.6rem;color:#94a3b8;">${PLN[item.p]}</div>`;
+      setTimeout(()=>{const el=document.getElementById('pi_'+i);if(el){el.focus();el.select();}},30);
+    } else {
+      div.innerHTML=`<div class="ptop"><span class="pbadge-p" data-pa="cycle" data-pi="${i}">${item.p.toUpperCase()}</span><span class="pname">${esc(item.text)}</span><button class="tbtn tb-edit" data-pa="pedit" data-pi="${i}" style="width:20px;height:20px;">&#9998;</button><button class="pcheck" data-pa="pcheck" data-pi="${i}">&#10003;</button><button class="pdel" data-pa="pdel" data-pi="${i}">&#10005;</button></div><div style="font-size:.6rem;color:#94a3b8;">${PLN[item.p]||''}</div>`;
+    }
+    g.appendChild(div);
+  });
+}
+document.getElementById('persGrid').addEventListener('click',function(e){
+  const el=e.target.closest('[data-pa]');if(!el)return;
+  const a=el.dataset.pa,i=parseInt(el.dataset.pi);
+  if(a==='cycle'){const c=PL.indexOf(personal[i].p);personal[i].p=PL[(c+1)%PL.length];sto('v5_pers',personal);renderPers();}
+  else if(a==='pedit'){editPersIdx=i;renderPers();}
+  else if(a==='psave'){const inp=document.getElementById('pi_'+i);if(inp&&inp.value.trim())personal[i].text=inp.value.trim();editPersIdx=null;sto('v5_pers',personal);renderPers();}
+  else if(a==='pcancel'){editPersIdx=null;renderPers();}
+  else if(a==='pcheck'){el.classList.add('checked');el.textContent='✓';setTimeout(()=>{personal.splice(i,1);sto('v5_pers',personal);renderPers();},500);}
+  else if(a==='pdel'){personal.splice(i,1);sto('v5_pers',personal);renderPers();}
+});
+document.getElementById('persGrid').addEventListener('keydown',function(e){
+  if(editPersIdx===null)return;
+  if(e.key==='Enter'){const inp=document.getElementById('pi_'+editPersIdx);if(inp&&inp.value.trim())personal[editPersIdx].text=inp.value.trim();editPersIdx=null;sto('v5_pers',personal);renderPers();}
+  if(e.key==='Escape'){editPersIdx=null;renderPers();}
+});
+document.getElementById('addPersBtn').onclick=addPers;
+document.getElementById('newPersInp').addEventListener('keydown',e=>{if(e.key==='Enter')addPers();});
+function addPers(){
+  const inp=document.getElementById('newPersInp'),txt=inp.value.trim();if(!txt)return;
+  personal.push({text:txt,p:'p1'});sto('v5_pers',personal);inp.value='';renderPers();
+}
+// ── NOTA DE VOZ ─────────────────────────────────────────
+document.getElementById('micBtn').onclick=function(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const status=document.getElementById('micStatus');
+  if(!SR){status.style.display='block';status.textContent='Reconocimiento de voz no disponible en este navegador.';return;}
+  const btn=this;if(btn.classList.contains('recording'))return;
+  const r=new SR();r.lang='es-AR';r.interimResults=false;r.maxAlternatives=1;
+  r.onstart=()=>{btn.classList.add('recording');btn.textContent='⏺';status.style.display='block';status.textContent='Escuchando...';};
+  r.onresult=e=>{document.getElementById('newPersInp').value=e.results[0][0].transcript;status.textContent='Listo. Revisa el texto y hace clic en + Agregar.';};
+  r.onerror=e=>{status.textContent=e.error==='not-allowed'?'Permiso de microfono denegado.':'Error: '+e.error;};
+  r.onend=()=>{btn.classList.remove('recording');btn.textContent='🎤';};
+  r.start();
+};
+// ── IMPORTAR TAREAS ───────────────────────────────────────
+document.getElementById('mdImportBtn').onclick=()=>document.getElementById('mdFileInput').click();
+document.getElementById('mdFileInput').onchange=function(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const lines=ev.target.result.split('\n');let added=0;
+    lines.forEach(line=>{
+      const m=line.match(/^\|\s*([^\|]+?)\s*\|\s*([^\|]{5,}?)\s*\|/);
+      if(!m)return;
+      const col1=m[1].trim(),col2=m[2].trim();
+      if(['#','Tarea','Estado','Contexto'].includes(col1)||col1.includes('---')||col2.includes('---'))return;
+      if(col2.length<5||col2==='Tarea')return;
+      const pt=tasks.filter(t=>t.p==='p3');
+      tasks.push({text:col2,meta:'',p:'p3',n:(pt.length?Math.max(...pt.map(t=>t.n||0)):0)+1,done:false});
+      added++;
+    });
+    if(added>0){sto('v6_tasks',tasks);renderTasks();alert(added+' tarea(s) importada(s) a P3.');}
+    else alert('No se encontraron tareas en el archivo.');
+    this.value='';
+  };
+  reader.readAsText(file);
+};
+// ── MODAL HELPER ────────────────────────────────────────
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.moverlay').forEach(m=>{m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});
+// ── SERVICE WORKER ────────────────────────────────────────
+if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}
+// ── INIT + FIREBASE SYNC ─────────────────────────────────
+const TASKS_VERSION='20260615';
+renderAgents();renderClients();renderTasks();renderCF();renderPers();
+let fbInit=false;
+panelRef.on('value',snap=>{
+  const data=snap.val();
+  if(!data){
+    if(!fbInit){fbInit=true;panelRef.set({v5_clients:clients,v6_tasks:tasks,v5_cf:cf,v5_pers:personal,tasks_version:TASKS_VERSION}).catch(()=>{});}
+    return;
+  }
+  const noEditing=(editTaskIdx===null&&editPersIdx===null&&cfEdit===null&&editCliIdx===null);
+  if(data.v5_clients)clients=data.v5_clients;
+  if(data.v6_tasks&&data.tasks_version===TASKS_VERSION){tasks=data.v6_tasks;}
+  else if(data.tasks_version!==TASKS_VERSION){
+    tasks=[...D_TASKS];
+    panelRef.update({v6_tasks:tasks,tasks_version:TASKS_VERSION}).catch(()=>{});
+  }
+  if(data.v5_cf)cf=data.v5_cf;
+  if(data.v5_pers)personal=data.v5_pers;
+  if(!fbInit||noEditing){renderClients();renderTasks();renderCF();renderPers();}
+  fbInit=true;
+});
+</script>
+</body>
+</html>
